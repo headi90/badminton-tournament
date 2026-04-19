@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { type Match, type Player } from '../lib/types'
 import { computeStandings } from '../lib/tournament'
 import MatchModal from './MatchModal'
+import { useLang } from '../lib/i18n'
 
 interface Props {
   matches: Match[]
@@ -10,19 +11,20 @@ interface Props {
 }
 
 export default function RoundRobinView({ matches, players, onRefresh }: Props) {
+  const { t } = useLang()
   const [selected, setSelected] = useState<Match | null>(null)
   const standings = computeStandings(matches, players)
 
   return (
     <div className="space-y-8">
       <div>
-        <h3 className="text-lg font-semibold text-gray-700 mb-3">Standings</h3>
+        <h3 className="text-lg font-semibold text-gray-700 mb-3">{t('rr_standings')}</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm border rounded-lg overflow-hidden">
             <thead className="bg-gray-100 text-gray-600">
               <tr>
                 <th className="text-left px-4 py-2">#</th>
-                <th className="text-left px-4 py-2">Player</th>
+                <th className="text-left px-4 py-2">{t('rr_col_player')}</th>
                 <th className="px-4 py-2">W</th>
                 <th className="px-4 py-2">L</th>
                 <th className="px-4 py-2">Pts</th>
@@ -44,7 +46,7 @@ export default function RoundRobinView({ matches, players, onRefresh }: Props) {
       </div>
 
       <div>
-        <h3 className="text-lg font-semibold text-gray-700 mb-3">Schedule</h3>
+        <h3 className="text-lg font-semibold text-gray-700 mb-3">{t('rr_schedule')}</h3>
         <div className="space-y-2">
           {matches
             .sort((a, b) => a.position - b.position)

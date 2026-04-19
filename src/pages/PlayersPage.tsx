@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { type Player } from '../lib/types'
 import * as db from '../lib/db'
+import { useLang } from '../lib/i18n'
 
 export default function PlayersPage() {
+  const { t } = useLang()
   const [players, setPlayers] = useState<Player[]>([])
   const [name, setName] = useState('')
 
@@ -21,19 +23,19 @@ export default function PlayersPage() {
   }
 
   function removePlayer(id: string) {
-    if (!confirm('Remove this player?')) return
+    if (!confirm(t('players_remove_confirm'))) return
     db.removePlayer(id)
     load()
   }
 
   return (
     <div className="max-w-lg mx-auto py-8 px-4">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Players</h1>
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">{t('players_heading')}</h1>
 
       <div className="flex gap-2 mb-6">
         <input
           type="text"
-          placeholder="Player name"
+          placeholder={t('players_placeholder')}
           value={name}
           onChange={e => setName(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && addPlayer()}
@@ -44,12 +46,12 @@ export default function PlayersPage() {
           disabled={!name.trim()}
           className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50"
         >
-          Add
+          {t('players_add')}
         </button>
       </div>
 
       {players.length === 0 ? (
-        <p className="text-gray-400 text-center py-8">No players yet.</p>
+        <p className="text-gray-400 text-center py-8">{t('players_empty')}</p>
       ) : (
         <ul className="space-y-2">
           {players.map(p => (
@@ -59,7 +61,7 @@ export default function PlayersPage() {
                 onClick={() => removePlayer(p.id)}
                 className="text-red-500 hover:text-red-700 text-sm"
               >
-                Remove
+                {t('players_remove')}
               </button>
             </li>
           ))}

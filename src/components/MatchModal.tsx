@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { type Match } from '../lib/types'
 import * as db from '../lib/db'
+import { useLang } from '../lib/i18n'
 
 interface Props {
   match: Match
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export default function MatchModal({ match, allMatches, format, onClose, onSaved }: Props) {
+  const { t } = useLang()
   const [score1, setScore1] = useState(match.score1 ?? 0)
   const [score2, setScore2] = useState(match.score2 ?? 0)
 
@@ -32,7 +34,7 @@ export default function MatchModal({ match, allMatches, format, onClose, onSaved
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm mx-4">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Enter Match Result</h2>
+        <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('match_title')}</h2>
         <div className="flex items-center gap-3 mb-6">
           <div className="flex-1 text-center">
             <p className="font-medium text-gray-700 mb-2">{p1Name}</p>
@@ -56,17 +58,17 @@ export default function MatchModal({ match, allMatches, format, onClose, onSaved
             />
           </div>
         </div>
-        {tied && <p className="text-amber-600 text-sm mb-3 text-center">Scores must not be equal.</p>}
+        {tied && <p className="text-amber-600 text-sm mb-3 text-center">{t('match_tied')}</p>}
         <div className="flex gap-3">
           <button onClick={onClose} className="flex-1 border border-gray-300 text-gray-600 rounded-lg py-2 hover:bg-gray-50">
-            Cancel
+            {t('match_cancel')}
           </button>
           <button
             onClick={handleSave}
             disabled={tied || !match.player1_id || !match.player2_id}
             className="flex-1 bg-green-600 text-white rounded-lg py-2 hover:bg-green-700 disabled:opacity-50"
           >
-            Save
+            {t('match_save')}
           </button>
         </div>
       </div>

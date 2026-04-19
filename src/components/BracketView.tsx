@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { type Match } from '../lib/types'
 import MatchModal from './MatchModal'
+import { useLang } from '../lib/i18n'
 
 interface Props {
   matches: Match[]
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export default function BracketView({ matches, onRefresh }: Props) {
+  const { t } = useLang()
   const [selected, setSelected] = useState<Match | null>(null)
 
   const rounds = Array.from(new Set(matches.map(m => m.round))).sort((a, b) => a - b)
@@ -19,7 +21,7 @@ export default function BracketView({ matches, onRefresh }: Props) {
           {rounds.map(round => (
             <div key={round} className="flex flex-col gap-4 justify-around">
               <h3 className="text-sm font-semibold text-gray-500 text-center mb-2">
-                Round {round}
+                {t('bracket_round')} {round}
               </h3>
               {matches
                 .filter(m => m.round === round)
