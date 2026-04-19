@@ -94,19 +94,6 @@ export default function TournamentDetailPage() {
 
       {tournament.status === 'setup' && (
         <div className="mb-8 space-y-4">
-          <h2 className="font-semibold text-gray-700">{t('detail_participants')} ({participants.length})</h2>
-          {participants.length > 0 && (
-            <ul className="space-y-2">
-              {participants.map(p => (
-                <li key={p.id} className="flex items-center justify-between border rounded-lg px-4 py-2 bg-white">
-                  <span className="text-gray-700">{p.name}</span>
-                  <button onClick={() => removeParticipant(p.id)} className="text-red-500 text-sm hover:text-red-700">
-                    {t('players_remove')}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
           {availablePlayers.length > 0 && (
             <div>
               <p className="text-sm text-gray-500 mb-2">{t('detail_add_player')}</p>
@@ -125,6 +112,19 @@ export default function TournamentDetailPage() {
           )}
           {allPlayers.length === 0 && (
             <p className="text-sm text-gray-400">{t('detail_no_players')}</p>
+          )}
+          <h2 className="font-semibold text-gray-700">{t('detail_participants')} ({participants.length})</h2>
+          {participants.length > 0 && (
+            <ul className="space-y-2">
+              {participants.map(p => (
+                <li key={p.id} className="flex items-center justify-between border rounded-lg px-4 py-2 bg-white">
+                  <span className="text-gray-700">{p.name}</span>
+                  <button onClick={() => removeParticipant(p.id)} className="text-red-500 text-sm hover:text-red-700">
+                    {t('players_remove')}
+                  </button>
+                </li>
+              ))}
+            </ul>
           )}
           <button
             onClick={startTournament}
