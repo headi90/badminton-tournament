@@ -9,31 +9,22 @@ export default function WelcomePage() {
         Organise single-elimination and round-robin tournaments for your group.
       </p>
 
-      <div className="grid grid-cols-2 gap-4 mb-10">
-        <div className="bg-white border rounded-xl p-5 text-left shadow-sm">
+      <div className="grid grid-cols-2 gap-4">
+        <Link
+          to="/tournaments"
+          className="bg-white border rounded-xl p-5 text-left shadow-sm hover:border-green-500 hover:shadow-md transition-all"
+        >
           <div className="text-2xl mb-2">🏆</div>
           <h2 className="font-semibold text-gray-800 mb-1">Tournaments</h2>
           <p className="text-sm text-gray-500">Create and manage brackets or round-robin group stages.</p>
-        </div>
-        <div className="bg-white border rounded-xl p-5 text-left shadow-sm">
-          <div className="text-2xl mb-2">👤</div>
-          <h2 className="font-semibold text-gray-800 mb-1">Players</h2>
-          <p className="text-sm text-gray-500">Keep a roster of players ready to enter any tournament.</p>
-        </div>
-      </div>
-
-      <div className="flex gap-3 justify-center">
-        <Link
-          to="/tournaments"
-          className="bg-green-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-green-700"
-        >
-          View Tournaments
         </Link>
         <Link
           to="/players"
-          className="bg-white border text-gray-700 px-6 py-2.5 rounded-lg font-medium hover:bg-gray-50"
+          className="bg-white border rounded-xl p-5 text-left shadow-sm hover:border-green-500 hover:shadow-md transition-all"
         >
-          Manage Players
+          <div className="text-2xl mb-2">👤</div>
+          <h2 className="font-semibold text-gray-800 mb-1">Players</h2>
+          <p className="text-sm text-gray-500">Keep a roster of players ready to enter any tournament.</p>
         </Link>
       </div>
     </div>
