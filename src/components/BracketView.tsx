@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { type Match } from '../lib/supabase'
+import { type Match } from '../lib/types'
 import MatchModal from './MatchModal'
 
 interface Props {

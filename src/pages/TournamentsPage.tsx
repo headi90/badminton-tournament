@@ -1,29 +1,24 @@
 import { useEffect, useState } from 'react'
-import { supabase, type Tournament, type TournamentFormat } from '../lib/supabase'
+import { type Tournament, type TournamentFormat } from '../lib/types'
+import * as db from '../lib/db'
 import TournamentCard from '../components/TournamentCard'
 
 export default function TournamentsPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([])
   const [name, setName] = useState('')
   const [format, setFormat] = useState<TournamentFormat>('single_elimination')
-  const [loading, setLoading] = useState(true)
-  const [creating, setCreating] = useState(false)
 
-  async function load() {
-    const { data } = await supabase.from('tournaments').select('*').order('created_at', { ascending: false })
-    setTournaments(data ?? [])
-    setLoading(false)
+  function load() {
+    setTournaments(db.getTournaments())
   }
 
   useEffect(() => { load() }, [])
 
-  async function createTournament() {
+  function createTournament() {
     const trimmed = name.trim()
     if (!trimmed) return
-    setCreating(true)
-    await supabase.from('tournaments').insert({ name: trimmed, format, status: 'setup' })
+    db.addTournament(trimmed, format)
     setName('')
-    setCreating(false)
     load()
   }
 
@@ -38,6 +33,7 @@ export default function TournamentsPage() {
           placeholder="Tournament name"
           value={name}
           onChange={e => setName(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && createTournament()}
           className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
         />
         <div className="flex gap-4">
@@ -59,16 +55,14 @@ export default function TournamentsPage() {
         </div>
         <button
           onClick={createTournament}
-          disabled={!name.trim() || creating}
+          disabled={!name.trim()}
           className="w-full bg-green-600 text-white rounded-lg py-2 hover:bg-green-700 disabled:opacity-50"
         >
-          {creating ? 'Creating…' : 'Create'}
+          Create
         </button>
       </div>
 
-      {loading ? (
-        <p className="text-gray-400 text-center py-8">Loading…</p>
-      ) : tournaments.length === 0 ? (
+      {tournaments.length === 0 ? (
         <p className="text-gray-400 text-center py-8">No tournaments yet.</p>
       ) : (
         <div className="space-y-3">

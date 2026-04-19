@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { type Match, type Player } from '../lib/supabase'
+import { type Match, type Player } from '../lib/types'
 import { computeStandings } from '../lib/tournament'
 import MatchModal from './MatchModal'
 

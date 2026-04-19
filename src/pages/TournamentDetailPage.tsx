@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { supabase, type Tournament, type Player, type Match } from '../lib/supabase'
-import {
-  generateSingleEliminationMatches,
-  generateRoundRobinMatches,
-} from '../lib/tournament'
+import { type Tournament, type Player, type Match } from '../lib/types'
+import * as db from '../lib/db'
+import { generateSingleEliminationMatches, generateRoundRobinMatches } from '../lib/tournament'
 import BracketView from '../components/BracketView'
 import RoundRobinView from '../components/RoundRobinView'
 
@@ -15,55 +13,44 @@ export default function TournamentDetailPage() {
   const [allPlayers, setAllPlayers] = useState<Player[]>([])
   const [participants, setParticipants] = useState<Player[]>([])
   const [matches, setMatches] = useState<Match[]>([])
-  const [loading, setLoading] = useState(true)
-  const [starting, setStarting] = useState(false)
 
-  async function load() {
-    const [{ data: t }, { data: p }, { data: tp }, { data: m }] = await Promise.all([
-      supabase.from('tournaments').select('*').eq('id', id).single(),
-      supabase.from('players').select('*').order('name'),
-      supabase.from('tournament_players').select('*, player:players(*)').eq('tournament_id', id).order('seed'),
-      supabase.from('matches').select('*, player1:players!matches_player1_id_fkey(*), player2:players!matches_player2_id_fkey(*)').eq('tournament_id', id).order('round').order('position'),
-    ])
+  function load() {
+    if (!id) return
+    const t = db.getTournament(id)
+    if (!t) return
     setTournament(t)
-    setAllPlayers(p ?? [])
-    setParticipants((tp ?? []).map((r: any) => r.player).filter(Boolean))
-    setMatches(m ?? [])
-    setLoading(false)
+    setAllPlayers(db.getPlayers())
+    setParticipants(db.getTournamentPlayers(id).map(tp => tp.player))
+    setMatches(db.getMatches(id))
   }
 
   useEffect(() => { load() }, [id])
 
-  async function addParticipant(playerId: string) {
-    const seed = participants.length + 1
-    await supabase.from('tournament_players').insert({ tournament_id: id, player_id: playerId, seed })
+  function addParticipant(playerId: string) {
+    db.addTournamentPlayer(id!, playerId, participants.length + 1)
     load()
   }
 
-  async function removeParticipant(playerId: string) {
-    await supabase.from('tournament_players').delete().eq('tournament_id', id).eq('player_id', playerId)
+  function removeParticipant(playerId: string) {
+    db.removeTournamentPlayer(id!, playerId)
     load()
   }
 
-  async function startTournament() {
+  function startTournament() {
     if (participants.length < 2) return alert('Need at least 2 players.')
-    setStarting(true)
-    const newMatches =
-      tournament!.format === 'single_elimination'
-        ? generateSingleEliminationMatches(id!, participants)
-        : generateRoundRobinMatches(id!, participants)
-    await supabase.from('matches').insert(newMatches)
-    await supabase.from('tournaments').update({ status: 'active' }).eq('id', id)
-    setStarting(false)
+    const newMatches = tournament!.format === 'single_elimination'
+      ? generateSingleEliminationMatches(id!, participants)
+      : generateRoundRobinMatches(id!, participants)
+    db.insertMatches(newMatches)
+    db.updateTournament(id!, { status: 'active' })
     load()
   }
 
-  async function finishTournament() {
-    await supabase.from('tournaments').update({ status: 'finished' }).eq('id', id)
+  function finishTournament() {
+    db.updateTournament(id!, { status: 'finished' })
     load()
   }
 
-  if (loading) return <p className="text-center py-16 text-gray-400">Loading…</p>
   if (!tournament) return <p className="text-center py-16 text-gray-400">Not found.</p>
 
   const availablePlayers = allPlayers.filter(p => !participants.find(pp => pp.id === p.id))
@@ -105,7 +92,9 @@ export default function TournamentDetailPage() {
               {participants.map(p => (
                 <li key={p.id} className="flex items-center justify-between border rounded-lg px-4 py-2 bg-white">
                   <span className="text-gray-700">{p.name}</span>
-                  <button onClick={() => removeParticipant(p.id)} className="text-red-500 text-sm hover:text-red-700">Remove</button>
+                  <button onClick={() => removeParticipant(p.id)} className="text-red-500 text-sm hover:text-red-700">
+                    Remove
+                  </button>
                 </li>
               ))}
             </ul>
@@ -126,24 +115,23 @@ export default function TournamentDetailPage() {
               </div>
             </div>
           )}
+          {allPlayers.length === 0 && (
+            <p className="text-sm text-gray-400">No players found. Add some in the Players page first.</p>
+          )}
           <button
             onClick={startTournament}
-            disabled={participants.length < 2 || starting}
+            disabled={participants.length < 2}
             className="mt-2 bg-green-600 text-white rounded-lg px-6 py-2 hover:bg-green-700 disabled:opacity-50"
           >
-            {starting ? 'Starting…' : 'Start Tournament'}
+            Start Tournament
           </button>
         </div>
       )}
 
       {(tournament.status === 'active' || tournament.status === 'finished') && (
-        <>
-          {tournament.format === 'single_elimination' ? (
-            <BracketView matches={matches} onRefresh={load} />
-          ) : (
-            <RoundRobinView matches={matches} players={participants} onRefresh={load} />
-          )}
-        </>
+        tournament.format === 'single_elimination'
+          ? <BracketView matches={matches} onRefresh={load} />
+          : <RoundRobinView matches={matches} players={participants} onRefresh={load} />
       )}
     </div>
   )

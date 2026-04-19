@@ -1,33 +1,28 @@
 import { useEffect, useState } from 'react'
-import { supabase, type Player } from '../lib/supabase'
+import { type Player } from '../lib/types'
+import * as db from '../lib/db'
 
 export default function PlayersPage() {
   const [players, setPlayers] = useState<Player[]>([])
   const [name, setName] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [deleting, setDeleting] = useState<string | null>(null)
 
-  async function load() {
-    const { data } = await supabase.from('players').select('*').order('created_at')
-    setPlayers(data ?? [])
-    setLoading(false)
+  function load() {
+    setPlayers(db.getPlayers())
   }
 
   useEffect(() => { load() }, [])
 
-  async function addPlayer() {
+  function addPlayer() {
     const trimmed = name.trim()
     if (!trimmed) return
-    await supabase.from('players').insert({ name: trimmed })
+    db.addPlayer(trimmed)
     setName('')
     load()
   }
 
-  async function removePlayer(id: string) {
+  function removePlayer(id: string) {
     if (!confirm('Remove this player?')) return
-    setDeleting(id)
-    await supabase.from('players').delete().eq('id', id)
-    setDeleting(null)
+    db.removePlayer(id)
     load()
   }
 
@@ -53,9 +48,7 @@ export default function PlayersPage() {
         </button>
       </div>
 
-      {loading ? (
-        <p className="text-gray-400 text-center py-8">Loading…</p>
-      ) : players.length === 0 ? (
+      {players.length === 0 ? (
         <p className="text-gray-400 text-center py-8">No players yet.</p>
       ) : (
         <ul className="space-y-2">
@@ -64,8 +57,7 @@ export default function PlayersPage() {
               <span className="font-medium text-gray-700">{p.name}</span>
               <button
                 onClick={() => removePlayer(p.id)}
-                disabled={deleting === p.id}
-                className="text-red-500 hover:text-red-700 text-sm disabled:opacity-40"
+                className="text-red-500 hover:text-red-700 text-sm"
               >
                 Remove
               </button>

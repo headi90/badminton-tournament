@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { type Tournament } from '../lib/supabase'
+import { type Tournament } from '../lib/types'
 
 const statusColors: Record<string, string> = {
   setup: 'bg-yellow-100 text-yellow-700',
