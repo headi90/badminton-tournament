@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { type Tournament, type Player, type Match } from '../lib/types'
 import * as db from '../lib/db'
-import { generateSingleEliminationMatches, generateRoundRobinMatches, generateAmericanoMatches } from '../lib/tournament'
+import { generateSingleEliminationMatches, generateRoundRobinMatches, generateAmericanoMatches, computePodium } from '../lib/tournament'
 import BracketView from '../components/BracketView'
 import RoundRobinView from '../components/RoundRobinView'
 import AmericanoView from '../components/AmericanoView'
+import PodiumModal from '../components/PodiumModal'
 import { useLang } from '../lib/i18n'
 
 export default function TournamentDetailPage() {
@@ -16,6 +17,7 @@ export default function TournamentDetailPage() {
   const [allPlayers, setAllPlayers] = useState<Player[]>([])
   const [participants, setParticipants] = useState<Player[]>([])
   const [matches, setMatches] = useState<Match[]>([])
+  const [podium, setPodium] = useState<{ place: number; name: string }[] | null>(null)
 
   function load() {
     if (!id) return
@@ -67,6 +69,7 @@ export default function TournamentDetailPage() {
   function finishTournament() {
     db.updateTournament(id!, { status: 'finished' })
     load()
+    setPodium(computePodium(tournament!.format, matches, participants))
   }
 
   if (!tournament) return <p className="text-center py-16 text-gray-400">{t('detail_not_found')}</p>
@@ -170,6 +173,14 @@ export default function TournamentDetailPage() {
             {t('detail_start')}
           </button>
         </div>
+      )}
+
+      {podium && (
+        <PodiumModal
+          tournamentName={tournament.name}
+          podium={podium}
+          onClose={() => setPodium(null)}
+        />
       )}
 
       {(tournament.status === 'active' || tournament.status === 'finished') && (

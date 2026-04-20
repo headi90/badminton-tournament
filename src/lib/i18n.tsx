@@ -75,6 +75,14 @@ export const translations = {
     tournament_remove: 'Delete',
     tournament_remove_confirm: 'Delete this tournament and all its matches?',
 
+    // Podium modal
+    podium_title: 'Tournament Finished!',
+    podium_congrats: 'Congratulations to all players!',
+    podium_1st: '1st Place',
+    podium_2nd: '2nd Place',
+    podium_3rd: '3rd Place',
+    podium_close: 'Close',
+
     // Match modal
     match_title: 'Enter Match Result',
     match_tied: 'Scores must not be equal.',
@@ -142,6 +150,13 @@ export const translations = {
 
     tournament_remove: 'Usuń',
     tournament_remove_confirm: 'Usunąć ten turniej wraz z wszystkimi meczami?',
+
+    podium_title: 'Koniec turnieju!',
+    podium_congrats: 'Gratulacje dla wszystkich graczy!',
+    podium_1st: '1. Miejsce',
+    podium_2nd: '2. Miejsce',
+    podium_3rd: '3. Miejsce',
+    podium_close: 'Zamknij',
 
     match_title: 'Wpisz wynik meczu',
     match_tied: 'Wyniki nie mogą być równe.',

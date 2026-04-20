@@ -128,6 +128,30 @@ export function computeStandings(matches: Match[], players: Player[]) {
     .sort((a, b) => b.points - a.points || b.wins - a.wins)
 }
 
+export function computePodium(
+  format: 'single_elimination' | 'round_robin' | 'americano',
+  matches: Match[],
+  players: Player[]
+): { place: number; name: string }[] {
+  if (format === 'single_elimination') {
+    const finalMatch = matches
+      .filter(m => m.status === 'completed' && m.winner_id)
+      .sort((a, b) => b.round - a.round)[0]
+    if (!finalMatch) return []
+    const first = players.find(p => p.id === finalMatch.winner_id)
+    const secondId = finalMatch.player1_id === finalMatch.winner_id ? finalMatch.player2_id : finalMatch.player1_id
+    const second = players.find(p => p.id === secondId)
+    return [
+      first ? { place: 1, name: first.name } : null,
+      second ? { place: 2, name: second.name } : null,
+    ].filter(Boolean) as { place: number; name: string }[]
+  }
+  const standings = format === 'round_robin'
+    ? computeStandings(matches, players)
+    : computeAmericanoStandings(matches, players)
+  return standings.slice(0, 3).map((row, i) => ({ place: i + 1, name: row.player.name }))
+}
+
 export function computeAmericanoStandings(matches: Match[], players: Player[]) {
   const stats: Record<string, { gamesPlayed: number; points: number }> = {}
   for (const p of players) {
