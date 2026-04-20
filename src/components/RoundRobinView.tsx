@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { type Match, type Player } from '../lib/types'
-import * as db from '../lib/db'
 import { computeStandings } from '../lib/tournament'
 import MatchModal from './MatchModal'
 import { useLang } from '../lib/i18n'
@@ -54,9 +53,9 @@ export default function RoundRobinView({ matches, players, onRefresh }: Props) {
             .map(match => (
               <div
                 key={match.id}
-                onClick={() => match.status === 'pending' ? setSelected(match) : undefined}
-                className={`flex items-center justify-between border rounded-lg px-4 py-3 bg-white ${
-                  match.status === 'pending' ? 'cursor-pointer hover:border-green-500' : 'bg-gray-50'
+                onClick={() => setSelected(match)}
+                className={`flex items-center justify-between border rounded-lg px-4 py-3 bg-white cursor-pointer hover:border-green-500 ${
+                  match.status === 'completed' ? 'bg-gray-50' : ''
                 }`}
               >
                 <span className={`font-medium ${match.winner_id === match.player1_id ? 'text-green-700 font-bold' : 'text-gray-700'}`}>
@@ -70,15 +69,6 @@ export default function RoundRobinView({ matches, players, onRefresh }: Props) {
                 <span className={`font-medium ${match.winner_id === match.player2_id ? 'text-green-700 font-bold' : 'text-gray-700'}`}>
                   {match.player2?.name ?? 'TBD'}
                 </span>
-                {match.status === 'completed' && (
-                  <button
-                    onClick={e => { e.stopPropagation(); db.resetMatch(match.id); onRefresh() }}
-                    className="ml-3 text-xs text-gray-400 hover:text-red-500"
-                    title={t('match_undo')}
-                  >
-                    ↩
-                  </button>
-                )}
               </div>
             ))}
         </div>

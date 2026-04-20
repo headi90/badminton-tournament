@@ -12,10 +12,30 @@ interface Props {
 export default function BracketView({ matches, onRefresh }: Props) {
   const { t } = useLang()
   const [selected, setSelected] = useState<Match | null>(null)
+  const [originalMatch, setOriginalMatch] = useState<Match | null>(null)
 
-  function handleUndo(match: Match) {
+  function openPending(match: Match) {
+    setSelected(match)
+    setOriginalMatch(null)
+  }
+
+  function openEdit(match: Match) {
     db.undoSingleElimAdvance(match)
-    db.resetMatch(match.id)
+    setOriginalMatch(match)
+    setSelected(match)
+  }
+
+  function handleClose() {
+    if (originalMatch) {
+      db.advanceSingleElimWinner(originalMatch, matches)
+    }
+    setSelected(null)
+    setOriginalMatch(null)
+  }
+
+  function handleSaved() {
+    setSelected(null)
+    setOriginalMatch(null)
     onRefresh()
   }
 
@@ -37,10 +57,10 @@ export default function BracketView({ matches, onRefresh }: Props) {
                   <MatchCard
                     key={match.id}
                     match={match}
-                    canUndo={db.canUndoSingleElim(match, matches)}
-                    onUndo={() => handleUndo(match)}
-                    onClick={() => match.status === 'pending' && setSelected(match)}
-                    undoLabel={t('match_undo')}
+                    canEdit={db.canUndoSingleElim(match, matches)}
+                    onEdit={() => openEdit(match)}
+                    onClick={() => match.status === 'pending' && openPending(match)}
+                    editLabel={t('match_edit')}
                   />
                 ))}
             </div>
@@ -53,20 +73,20 @@ export default function BracketView({ matches, onRefresh }: Props) {
           match={selected}
           allMatches={matches}
           format="single_elimination"
-          onClose={() => setSelected(null)}
-          onSaved={() => { setSelected(null); onRefresh() }}
+          onClose={handleClose}
+          onSaved={handleSaved}
         />
       )}
     </div>
   )
 }
 
-function MatchCard({ match, canUndo, onUndo, onClick, undoLabel }: {
+function MatchCard({ match, canEdit, onEdit, onClick, editLabel }: {
   match: Match
-  canUndo: boolean
-  onUndo: () => void
+  canEdit: boolean
+  onEdit: () => void
   onClick: () => void
-  undoLabel: string
+  editLabel: string
 }) {
   const canPlay = match.status === 'pending' && match.player1_id && match.player2_id
   return (
@@ -89,12 +109,12 @@ function MatchCard({ match, canUndo, onUndo, onClick, undoLabel }: {
         won={match.winner_id === match.player2_id}
         completed={match.status === 'completed'}
       />
-      {canUndo && (
+      {canEdit && (
         <button
-          onClick={e => { e.stopPropagation(); onUndo() }}
-          className="mt-1.5 w-full text-xs text-gray-400 hover:text-red-500"
+          onClick={e => { e.stopPropagation(); onEdit() }}
+          className="mt-1.5 w-full text-xs text-gray-400 hover:text-green-600"
         >
-          ↩ {undoLabel}
+          ✎ {editLabel}
         </button>
       )}
     </div>

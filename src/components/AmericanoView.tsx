@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { type Match, type Player } from '../lib/types'
-import * as db from '../lib/db'
 import { computeAmericanoStandings } from '../lib/tournament'
 import MatchModal from './MatchModal'
 import { useLang } from '../lib/i18n'
@@ -58,14 +57,11 @@ export default function AmericanoView({ matches, players, onRefresh }: Props) {
                 {matches
                   .filter(m => m.round === round)
                   .map(match => {
-                    const canClick = match.status === 'pending' &&
-                      match.player1_id && match.player2_id &&
-                      match.player3_id && match.player4_id
                     return (
                       <div
                         key={match.id}
-                        onClick={() => canClick ? setSelected(match) : undefined}
-                        className={`border rounded-lg px-4 py-3 bg-white ${canClick ? 'cursor-pointer hover:border-green-500' : 'bg-gray-50'}`}
+                        onClick={() => setSelected(match)}
+                        className={`border rounded-lg px-4 py-3 bg-white cursor-pointer hover:border-green-500 ${match.status === 'completed' ? 'bg-gray-50' : ''}`}
                       >
                         <div className="flex items-center justify-between">
                           <div className="text-sm">
@@ -73,22 +69,11 @@ export default function AmericanoView({ matches, players, onRefresh }: Props) {
                             <span className="text-gray-400 mx-1">&</span>
                             <span className="font-medium text-gray-800">{match.player2?.name}</span>
                           </div>
-                          <div className="flex items-center gap-1 mx-4">
-                            <span className="text-gray-400 text-sm">
-                              {match.status === 'completed'
-                                ? `${match.score1} — ${match.score2}`
-                                : 'vs'}
-                            </span>
-                            {match.status === 'completed' && (
-                              <button
-                                onClick={e => { e.stopPropagation(); db.resetMatch(match.id); onRefresh() }}
-                                className="text-xs text-gray-300 hover:text-red-500"
-                                title={t('match_undo')}
-                              >
-                                ↩
-                              </button>
-                            )}
-                          </div>
+                          <span className="text-gray-400 text-sm mx-4">
+                            {match.status === 'completed'
+                              ? `${match.score1} — ${match.score2}`
+                              : 'vs'}
+                          </span>
                           <div className="text-sm text-right">
                             <span className="font-medium text-gray-800">{match.player3?.name}</span>
                             <span className="text-gray-400 mx-1">&</span>
