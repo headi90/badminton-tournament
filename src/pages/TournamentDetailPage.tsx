@@ -44,6 +44,11 @@ export default function TournamentDetailPage() {
     load()
   }
 
+  function removeAllParticipants() {
+    participants.forEach(p => db.removeTournamentPlayer(id!, p.id))
+    load()
+  }
+
   function startTournament() {
     if (tournament!.format === 'americano' && participants.length < 4)
       return alert(t('detail_need_players_americano'))
@@ -134,7 +139,17 @@ export default function TournamentDetailPage() {
           {allPlayers.length === 0 && (
             <p className="text-sm text-gray-400">{t('detail_no_players')}</p>
           )}
-          <h2 className="font-semibold text-gray-700">{t('detail_participants')} ({participants.length})</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold text-gray-700">{t('detail_participants')} ({participants.length})</h2>
+            {participants.length > 0 && (
+              <button
+                onClick={removeAllParticipants}
+                className="text-xs text-red-500 border border-red-400 rounded-full px-3 py-0.5 hover:bg-red-50"
+              >
+                {t('detail_remove_all')}
+              </button>
+            )}
+          </div>
           {participants.length > 0 && (
             <ul className="space-y-2">
               {participants.map(p => (
