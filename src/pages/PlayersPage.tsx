@@ -34,9 +34,25 @@ export default function PlayersPage() {
     load()
   }
 
+  function removeAllPlayers() {
+    if (!confirm(t('players_remove_all_confirm'))) return
+    players.forEach(p => db.removePlayer(p.id))
+    load()
+  }
+
   return (
     <div className="max-w-lg mx-auto py-8 px-4">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">{t('players_heading')}</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">{t('players_heading')}</h1>
+        {players.length > 0 && (
+          <button
+            onClick={removeAllPlayers}
+            className="text-xs text-red-500 border border-red-400 rounded-full px-3 py-0.5 hover:bg-red-50"
+          >
+            {t('detail_remove_all')}
+          </button>
+        )}
+      </div>
 
       <div className="flex gap-2 mb-1">
         <input
