@@ -58,6 +58,12 @@ export function updateTournament(id: string, patch: Partial<Tournament>): void {
   save('bt_tournaments', load<Tournament>('bt_tournaments').map(t => t.id === id ? { ...t, ...patch } : t))
 }
 
+export function removeTournament(id: string): void {
+  save('bt_tournaments', load<Tournament>('bt_tournaments').filter(t => t.id !== id))
+  save('bt_tournament_players', load<TournamentPlayer>('bt_tournament_players').filter(tp => tp.tournament_id !== id))
+  save('bt_matches', load<Match>('bt_matches').filter(m => m.tournament_id !== id))
+}
+
 // --- Tournament Players ---
 
 export function getTournamentPlayers(tournamentId: string): (TournamentPlayer & { player: Player })[] {

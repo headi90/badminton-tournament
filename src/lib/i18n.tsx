@@ -57,7 +57,14 @@ export const translations = {
     rr_schedule: 'Schedule',
     rr_col_player: 'Player',
 
+    // Tournament card
+    tournament_remove: 'Delete',
+    tournament_remove_confirm: 'Delete this tournament and all its matches?',
+
     // Match modal
+    tournament_remove: 'Usuń',
+    tournament_remove_confirm: 'Usunąć ten turniej wraz z wszystkimi meczami?',
+
     match_title: 'Enter Match Result',
     match_tied: 'Scores must not be equal.',
     match_cancel: 'Cancel',

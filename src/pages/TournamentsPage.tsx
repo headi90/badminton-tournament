@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { type Tournament, type TournamentFormat } from '../lib/types'
 import * as db from '../lib/db'
 import TournamentCard from '../components/TournamentCard'
+
 import { useLang } from '../lib/i18n'
 
 export default function TournamentsPage() {
@@ -15,6 +16,11 @@ export default function TournamentsPage() {
   }
 
   useEffect(() => { load() }, [])
+
+  function deleteTournament(id: string) {
+    db.removeTournament(id)
+    load()
+  }
 
   function createTournament() {
     const trimmed = name.trim()
@@ -68,7 +74,7 @@ export default function TournamentsPage() {
         <p className="text-gray-400 text-center py-8">{t('tournaments_empty')}</p>
       ) : (
         <div className="space-y-3">
-          {tournaments.map(t => <TournamentCard key={t.id} t={t} />)}
+          {tournaments.map(t => <TournamentCard key={t.id} t={t} onRemove={deleteTournament} />)}
         </div>
       )}
     </div>

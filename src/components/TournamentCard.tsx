@@ -8,8 +8,20 @@ const statusColors: Record<string, string> = {
   finished: 'bg-gray-100 text-gray-500',
 }
 
-export default function TournamentCard({ t: tournament }: { t: Tournament }) {
+interface Props {
+  t: Tournament
+  onRemove: (id: string) => void
+}
+
+export default function TournamentCard({ t: tournament, onRemove }: Props) {
   const { t } = useLang()
+
+  function handleRemove(e: React.MouseEvent) {
+    e.preventDefault()
+    if (!confirm(t('tournament_remove_confirm'))) return
+    onRemove(tournament.id)
+  }
+
   return (
     <Link
       to={`/tournaments/${tournament.id}`}
@@ -17,9 +29,17 @@ export default function TournamentCard({ t: tournament }: { t: Tournament }) {
     >
       <div className="flex justify-between items-start">
         <h2 className="font-semibold text-gray-800">{tournament.name}</h2>
-        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[tournament.status]}`}>
-          {t(`status_${tournament.status}` as Parameters<typeof t>[0])}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[tournament.status]}`}>
+            {t(`status_${tournament.status}` as Parameters<typeof t>[0])}
+          </span>
+          <button
+            onClick={handleRemove}
+            className="text-red-400 hover:text-red-600 text-sm px-1"
+          >
+            ✕
+          </button>
+        </div>
       </div>
       <p className="text-sm text-gray-500 mt-1">
         {tournament.format === 'single_elimination' ? t('tournaments_format_single') : t('tournaments_format_rr')}
