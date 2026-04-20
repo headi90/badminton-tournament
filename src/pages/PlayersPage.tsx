@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { type Player } from '../lib/types'
 import * as db from '../lib/db'
 import { useLang } from '../lib/i18n'
@@ -81,7 +82,7 @@ export default function PlayersPage() {
         <ul className="space-y-2">
           {players.map(p => (
             <li key={p.id} className="flex items-center justify-between border rounded-lg px-4 py-3 bg-white">
-              <span className="font-medium text-gray-700">{p.name}</span>
+              <Link to={`/players/${p.id}`} className="font-medium text-gray-700 hover:text-green-700">{p.name}</Link>
               <button
                 onClick={() => removePlayer(p.id)}
                 className="text-red-500 hover:text-red-700 text-sm"

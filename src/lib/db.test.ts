@@ -4,6 +4,7 @@ import {
   getTournaments, getTournament, addTournament, updateTournament, removeTournament,
   getTournamentPlayers, addTournamentPlayer, removeTournamentPlayer,
   getMatches, insertMatches, updateMatch, advanceSingleElimWinner,
+  getPlayerMatchHistory,
 } from './db'
 
 // In-memory localStorage stub
@@ -216,6 +217,48 @@ describe('matches', () => {
 // ---------------------------------------------------------------------------
 // advanceSingleElimWinner
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// getPlayerMatchHistory
+// ---------------------------------------------------------------------------
+
+describe('getPlayerMatchHistory', () => {
+  it('returns only matches the player participated in', () => {
+    const t = addTournament('Cup', 'round_robin')
+    const p1 = addPlayer('Alice')
+    const p2 = addPlayer('Bob')
+    const p3 = addPlayer('Carol')
+    insertMatches([
+      { tournament_id: t.id, round: 1, position: 0, player1_id: p1.id, player2_id: p2.id, score1: null, score2: null, winner_id: null, status: 'pending' },
+      { tournament_id: t.id, round: 1, position: 1, player1_id: p2.id, player2_id: p3.id, score1: null, score2: null, winner_id: null, status: 'pending' },
+    ])
+    expect(getPlayerMatchHistory(p1.id)).toHaveLength(1)
+    expect(getPlayerMatchHistory(p2.id)).toHaveLength(2)
+    expect(getPlayerMatchHistory(p3.id)).toHaveLength(1)
+  })
+
+  it('includes tournament name on each match', () => {
+    const t = addTournament('Spring Cup', 'round_robin')
+    const p = addPlayer('Alice')
+    insertMatches([{ tournament_id: t.id, round: 1, position: 0, player1_id: p.id, player2_id: null, score1: null, score2: null, winner_id: null, status: 'pending' }])
+    const history = getPlayerMatchHistory(p.id)
+    expect(history[0].tournamentName).toBe('Spring Cup')
+  })
+
+  it('includes americano matches where player is on team 2', () => {
+    const t = addTournament('Cup', 'americano')
+    const p1 = addPlayer('A'); const p2 = addPlayer('B')
+    const p3 = addPlayer('C'); const p4 = addPlayer('D')
+    insertMatches([{ tournament_id: t.id, round: 1, position: 0, player1_id: p1.id, player2_id: p2.id, player3_id: p3.id, player4_id: p4.id, score1: null, score2: null, winner_id: null, status: 'pending' }])
+    expect(getPlayerMatchHistory(p3.id)).toHaveLength(1)
+    expect(getPlayerMatchHistory(p4.id)).toHaveLength(1)
+  })
+
+  it('returns empty array for a player with no matches', () => {
+    const p = addPlayer('Ghost')
+    expect(getPlayerMatchHistory(p.id)).toHaveLength(0)
+  })
+})
 
 describe('advanceSingleElimWinner', () => {
   it('puts the winner into the correct slot of the next round match', () => {

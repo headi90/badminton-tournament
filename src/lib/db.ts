@@ -35,6 +35,26 @@ export function removePlayer(id: string): void {
   save('bt_players', load<Player>('bt_players').filter(p => p.id !== id))
 }
 
+export function getPlayerMatchHistory(playerId: string): (Match & { tournamentName: string })[] {
+  const allMatches = load<Match>('bt_matches')
+  const tournaments = load<Tournament>('bt_tournaments')
+  const players = load<Player>('bt_players')
+  return allMatches
+    .filter(m =>
+      m.player1_id === playerId || m.player2_id === playerId ||
+      m.player3_id === playerId || m.player4_id === playerId
+    )
+    .map(m => ({
+      ...m,
+      player1: players.find(p => p.id === m.player1_id),
+      player2: players.find(p => p.id === m.player2_id),
+      player3: players.find(p => p.id === m.player3_id),
+      player4: players.find(p => p.id === m.player4_id),
+      tournamentName: tournaments.find(t => t.id === m.tournament_id)?.name ?? '—',
+    }))
+    .sort((a, b) => a.tournament_id.localeCompare(b.tournament_id) || a.round - b.round || a.position - b.position)
+}
+
 // --- Tournaments ---
 
 export function getTournaments(): Tournament[] {

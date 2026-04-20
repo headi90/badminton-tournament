@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom'
 import WelcomePage from './pages/WelcomePage'
 import PlayersPage from './pages/PlayersPage'
+import PlayerProfilePage from './pages/PlayerProfilePage'
 import TournamentsPage from './pages/TournamentsPage'
 import TournamentDetailPage from './pages/TournamentDetailPage'
 import { useLang } from './lib/i18n'
@@ -65,6 +66,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<WelcomePage />} />
             <Route path="/players" element={<PlayersPage />} />
+            <Route path="/players/:id" element={<PlayerProfilePage />} />
             <Route path="/tournaments" element={<TournamentsPage />} />
             <Route path="/tournaments/:id" element={<TournamentDetailPage />} />
           </Routes>

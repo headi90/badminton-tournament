@@ -46,6 +46,16 @@ export const translations = {
     detail_need_players_americano: 'Need at least 4 players for Americano.',
     detail_americano_remainder: 'Note: with this player count, some players will sit out each round.',
 
+    // Player profile
+    profile_back: '← Players',
+    profile_games: 'Games',
+    profile_wins: 'Wins',
+    profile_losses: 'Losses',
+    profile_win: 'Win',
+    profile_loss: 'Loss',
+    profile_pending: 'Pending',
+    profile_no_history: 'No match history yet.',
+
     // Players page
     players_heading: 'Players',
     players_placeholder: 'Player name',
@@ -130,6 +140,15 @@ export const translations = {
     detail_need_players: 'Potrzeba co najmniej 2 graczy.',
     detail_need_players_americano: 'Potrzeba co najmniej 4 graczy do Americano.',
     detail_americano_remainder: 'Uwaga: przy tej liczbie graczy, niektórzy będą mieć przerwę w każdej rundzie.',
+
+    profile_back: '← Gracze',
+    profile_games: 'Mecze',
+    profile_wins: 'Wygrane',
+    profile_losses: 'Przegrane',
+    profile_win: 'Wygrana',
+    profile_loss: 'Przegrana',
+    profile_pending: 'Oczekujący',
+    profile_no_history: 'Brak historii meczów.',
 
     players_heading: 'Gracze',
     players_placeholder: 'Imię gracza',
