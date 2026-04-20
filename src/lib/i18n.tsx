@@ -44,6 +44,7 @@ export const translations = {
     detail_not_found: 'Not found.',
     detail_need_players: 'Need at least 2 players.',
     detail_need_players_americano: 'Need at least 4 players for Americano.',
+    detail_americano_remainder: 'Note: with this player count, some players will sit out each round.',
 
     // Players page
     players_heading: 'Players',
@@ -62,6 +63,9 @@ export const translations = {
     rr_standings: 'Standings',
     rr_schedule: 'Schedule',
     rr_col_player: 'Player',
+    rr_col_wins: 'W',
+    rr_col_losses: 'L',
+    rr_col_pts: 'Pts',
 
     // Americano
     americano_standings: 'Standings',
@@ -125,6 +129,7 @@ export const translations = {
     detail_not_found: 'Nie znaleziono.',
     detail_need_players: 'Potrzeba co najmniej 2 graczy.',
     detail_need_players_americano: 'Potrzeba co najmniej 4 graczy do Americano.',
+    detail_americano_remainder: 'Uwaga: przy tej liczbie graczy, niektórzy będą mieć przerwę w każdej rundzie.',
 
     players_heading: 'Gracze',
     players_placeholder: 'Imię gracza',
@@ -140,6 +145,9 @@ export const translations = {
     rr_standings: 'Tabela',
     rr_schedule: 'Harmonogram',
     rr_col_player: 'Gracz',
+    rr_col_wins: 'W',
+    rr_col_losses: 'P',
+    rr_col_pts: 'Pkt',
 
     americano_standings: 'Tabela',
     americano_schedule: 'Harmonogram',

@@ -74,7 +74,7 @@ export default function TournamentsPage() {
         <p className="text-gray-400 text-center py-8">{t('tournaments_empty')}</p>
       ) : (
         <div className="space-y-3">
-          {tournaments.map(t => <TournamentCard key={t.id} t={t} onRemove={deleteTournament} />)}
+          {tournaments.map(tournament => <TournamentCard key={tournament.id} t={tournament} onRemove={deleteTournament} />)}
         </div>
       )}
     </div>

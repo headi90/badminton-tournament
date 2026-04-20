@@ -28,6 +28,7 @@ export default function MatchModal({ match, allMatches, format, onClose, onSaved
     : (match.player2?.name ?? 'TBD')
 
   function handleSave() {
+    if (score1 < 0 || score2 < 0) return
     if (isAmericano) {
       db.updateMatch(match.id, { score1, score2, status: 'completed' })
       onSaved()
@@ -42,9 +43,10 @@ export default function MatchModal({ match, allMatches, format, onClose, onSaved
     onSaved()
   }
 
-  const canSave = isAmericano
+  const scoresValid = score1 >= 0 && score2 >= 0
+  const canSave = scoresValid && (isAmericano
     ? (match.player1_id && match.player2_id && match.player3_id && match.player4_id)
-    : (!tied && match.player1_id && match.player2_id)
+    : (!tied && match.player1_id && match.player2_id))
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">

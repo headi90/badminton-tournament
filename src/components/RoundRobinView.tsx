@@ -25,9 +25,9 @@ export default function RoundRobinView({ matches, players, onRefresh }: Props) {
               <tr>
                 <th className="text-left px-4 py-2">#</th>
                 <th className="text-left px-4 py-2">{t('rr_col_player')}</th>
-                <th className="px-4 py-2">W</th>
-                <th className="px-4 py-2">L</th>
-                <th className="px-4 py-2">Pts</th>
+                <th className="px-4 py-2">{t('rr_col_wins')}</th>
+                <th className="px-4 py-2">{t('rr_col_losses')}</th>
+                <th className="px-4 py-2">{t('rr_col_pts')}</th>
               </tr>
             </thead>
             <tbody>

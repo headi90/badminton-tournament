@@ -32,46 +32,48 @@ export default function TournamentDetailPage() {
   useEffect(() => { load() }, [id])
 
   function addParticipant(playerId: string) {
-    db.addTournamentPlayer(id!, playerId, participants.length + 1)
+    db.addTournamentPlayer(id, playerId, participants.length + 1)
     load()
   }
 
   function addAllParticipants() {
-    availablePlayers.forEach((p, i) => db.addTournamentPlayer(id!, p.id, participants.length + i + 1))
+    availablePlayers.forEach((p, i) => db.addTournamentPlayer(id, p.id, participants.length + i + 1))
     load()
   }
 
   function removeParticipant(playerId: string) {
-    db.removeTournamentPlayer(id!, playerId)
+    db.removeTournamentPlayer(id, playerId)
     load()
   }
 
   function removeAllParticipants() {
-    participants.forEach(p => db.removeTournamentPlayer(id!, p.id))
+    participants.forEach(p => db.removeTournamentPlayer(id, p.id))
     load()
   }
 
   function startTournament() {
-    if (tournament!.format === 'americano' && participants.length < 4)
+    if (tournament.format === 'americano' && participants.length < 4)
       return alert(t('detail_need_players_americano'))
-    if (tournament!.format !== 'americano' && participants.length < 2)
+    if (tournament.format !== 'americano' && participants.length < 2)
       return alert(t('detail_need_players'))
-    const newMatches = tournament!.format === 'single_elimination'
-      ? generateSingleEliminationMatches(id!, participants)
-      : tournament!.format === 'round_robin'
-      ? generateRoundRobinMatches(id!, participants)
-      : generateAmericanoMatches(id!, participants)
+    const newMatches = tournament.format === 'single_elimination'
+      ? generateSingleEliminationMatches(id, participants)
+      : tournament.format === 'round_robin'
+      ? generateRoundRobinMatches(id, participants)
+      : generateAmericanoMatches(id, participants)
     db.insertMatches(newMatches)
-    db.updateTournament(id!, { status: 'active' })
+    db.updateTournament(id, { status: 'active' })
     load()
   }
 
   function finishTournament() {
-    db.updateTournament(id!, { status: 'finished' })
+    db.updateTournament(id, { status: 'finished' })
+    const freshMatches = db.getMatches(id)
+    setPodium(computePodium(tournament.format, freshMatches, participants))
     load()
-    setPodium(computePodium(tournament!.format, matches, participants))
   }
 
+  if (!id) return <p className="text-center py-16 text-gray-400">{t('detail_not_found')}</p>
   if (!tournament) return <p className="text-center py-16 text-gray-400">{t('detail_not_found')}</p>
 
   const availablePlayers = allPlayers.filter(p => !participants.find(pp => pp.id === p.id))
@@ -164,6 +166,9 @@ export default function TournamentDetailPage() {
                 </li>
               ))}
             </ul>
+          )}
+          {tournament.format === 'americano' && participants.length % 4 !== 0 && participants.length >= 4 && (
+            <p className="text-amber-600 text-sm">{t('detail_americano_remainder')}</p>
           )}
           <button
             onClick={startTournament}

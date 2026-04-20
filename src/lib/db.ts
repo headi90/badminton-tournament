@@ -71,8 +71,8 @@ export function getTournamentPlayers(tournamentId: string): (TournamentPlayer & 
   const players = load<Player>('bt_players')
   return all
     .sort((a, b) => a.seed - b.seed)
-    .map(tp => ({ ...tp, player: players.find(p => p.id === tp.player_id)! }))
-    .filter(tp => tp.player)
+    .map(tp => ({ ...tp, player: players.find(p => p.id === tp.player_id) }))
+    .filter((tp): tp is TournamentPlayer & { player: Player } => tp.player !== undefined)
 }
 
 export function addTournamentPlayer(tournamentId: string, playerId: string, seed: number): void {
@@ -106,7 +106,7 @@ export function getMatches(tournamentId: string): Match[] {
     }))
 }
 
-export function insertMatches(matches: Omit<Match, 'id' | 'player1' | 'player2'>[]): void {
+export function insertMatches(matches: Omit<Match, 'id' | 'player1' | 'player2' | 'player3' | 'player4'>[]): void {
   const all = load<Match>('bt_matches')
   const newMatches = matches.map(m => ({ ...m, id: uid() }))
   save('bt_matches', [...all, ...newMatches])

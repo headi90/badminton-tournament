@@ -14,7 +14,7 @@ function Nav() {
           to="/"
           end
           className={({ isActive }) =>
-            `font-bold text-lg ${isActive ? 'text-green-700' : 'text-green-700 hover:text-green-800'}`
+            `font-bold text-lg ${isActive ? 'text-green-700 border-b-2 border-green-700 pb-[2px]' : 'text-green-700 hover:text-green-800'}`
           }
         >
           {t('nav_home')}
