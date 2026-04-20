@@ -136,6 +136,37 @@ export function updateMatch(id: string, patch: Partial<Match>): void {
   save('bt_matches', load<Match>('bt_matches').map(m => m.id === id ? { ...m, ...patch } : m))
 }
 
+export function resetMatch(matchId: string): void {
+  save('bt_matches', load<Match>('bt_matches').map(m =>
+    m.id === matchId
+      ? { ...m, score1: null, score2: null, winner_id: null, status: 'pending' }
+      : m
+  ))
+}
+
+export function undoSingleElimAdvance(match: Match): void {
+  if (!match.winner_id) return
+  const nextRound = match.round + 1
+  const nextPos = Math.floor(match.position / 2)
+  const slot = match.position % 2 === 0 ? 'player1_id' : 'player2_id'
+  const all = load<Match>('bt_matches')
+  const nextMatch = all.find(m =>
+    m.tournament_id === match.tournament_id &&
+    m.round === nextRound &&
+    m.position === nextPos
+  )
+  if (!nextMatch) return
+  updateMatch(nextMatch.id, { [slot]: null })
+}
+
+export function canUndoSingleElim(match: Match, allMatches: Match[]): boolean {
+  if (match.status !== 'completed') return false
+  const nextRound = match.round + 1
+  const nextPos = Math.floor(match.position / 2)
+  const nextMatch = allMatches.find(m => m.round === nextRound && m.position === nextPos)
+  return !nextMatch || nextMatch.status === 'pending'
+}
+
 export function advanceSingleElimWinner(match: Match, allMatches: Match[]): void {
   if (!match.winner_id) return
   const nextRound = match.round + 1

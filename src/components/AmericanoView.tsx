@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { type Match, type Player } from '../lib/types'
+import * as db from '../lib/db'
 import { computeAmericanoStandings } from '../lib/tournament'
 import MatchModal from './MatchModal'
 import { useLang } from '../lib/i18n'
@@ -72,11 +73,22 @@ export default function AmericanoView({ matches, players, onRefresh }: Props) {
                             <span className="text-gray-400 mx-1">&</span>
                             <span className="font-medium text-gray-800">{match.player2?.name}</span>
                           </div>
-                          <span className="text-gray-400 text-sm mx-4">
-                            {match.status === 'completed'
-                              ? `${match.score1} — ${match.score2}`
-                              : 'vs'}
-                          </span>
+                          <div className="flex items-center gap-1 mx-4">
+                            <span className="text-gray-400 text-sm">
+                              {match.status === 'completed'
+                                ? `${match.score1} — ${match.score2}`
+                                : 'vs'}
+                            </span>
+                            {match.status === 'completed' && (
+                              <button
+                                onClick={e => { e.stopPropagation(); db.resetMatch(match.id); onRefresh() }}
+                                className="text-xs text-gray-300 hover:text-red-500"
+                                title={t('match_undo')}
+                              >
+                                ↩
+                              </button>
+                            )}
+                          </div>
                           <div className="text-sm text-right">
                             <span className="font-medium text-gray-800">{match.player3?.name}</span>
                             <span className="text-gray-400 mx-1">&</span>

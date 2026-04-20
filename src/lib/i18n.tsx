@@ -101,6 +101,7 @@ export const translations = {
     // Match modal
     match_title: 'Enter Match Result',
     match_tied: 'Scores must not be equal.',
+    match_undo: 'Undo',
     match_cancel: 'Cancel',
     match_save: 'Save',
   },
@@ -189,6 +190,7 @@ export const translations = {
 
     match_title: 'Wpisz wynik meczu',
     match_tied: 'Wyniki nie mogą być równe.',
+    match_undo: 'Cofnij',
     match_cancel: 'Anuluj',
     match_save: 'Zapisz',
   },

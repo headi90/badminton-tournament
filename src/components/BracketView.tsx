@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { type Match } from '../lib/types'
+import * as db from '../lib/db'
 import MatchModal from './MatchModal'
 import { useLang } from '../lib/i18n'
 
@@ -11,6 +12,12 @@ interface Props {
 export default function BracketView({ matches, onRefresh }: Props) {
   const { t } = useLang()
   const [selected, setSelected] = useState<Match | null>(null)
+
+  function handleUndo(match: Match) {
+    db.undoSingleElimAdvance(match)
+    db.resetMatch(match.id)
+    onRefresh()
+  }
 
   const rounds = Array.from(new Set(matches.map(m => m.round))).sort((a, b) => a - b)
 
@@ -30,7 +37,10 @@ export default function BracketView({ matches, onRefresh }: Props) {
                   <MatchCard
                     key={match.id}
                     match={match}
+                    canUndo={db.canUndoSingleElim(match, matches)}
+                    onUndo={() => handleUndo(match)}
                     onClick={() => match.status === 'pending' && setSelected(match)}
+                    undoLabel={t('match_undo')}
                   />
                 ))}
             </div>
@@ -51,7 +61,13 @@ export default function BracketView({ matches, onRefresh }: Props) {
   )
 }
 
-function MatchCard({ match, onClick }: { match: Match; onClick: () => void }) {
+function MatchCard({ match, canUndo, onUndo, onClick, undoLabel }: {
+  match: Match
+  canUndo: boolean
+  onUndo: () => void
+  onClick: () => void
+  undoLabel: string
+}) {
   const canPlay = match.status === 'pending' && match.player1_id && match.player2_id
   return (
     <div
@@ -73,6 +89,14 @@ function MatchCard({ match, onClick }: { match: Match; onClick: () => void }) {
         won={match.winner_id === match.player2_id}
         completed={match.status === 'completed'}
       />
+      {canUndo && (
+        <button
+          onClick={e => { e.stopPropagation(); onUndo() }}
+          className="mt-1.5 w-full text-xs text-gray-400 hover:text-red-500"
+        >
+          ↩ {undoLabel}
+        </button>
+      )}
     </div>
   )
 }

@@ -4,7 +4,7 @@ import {
   getTournaments, getTournament, addTournament, updateTournament, removeTournament,
   getTournamentPlayers, addTournamentPlayer, removeTournamentPlayer,
   getMatches, insertMatches, updateMatch, advanceSingleElimWinner,
-  getPlayerMatchHistory,
+  getPlayerMatchHistory, resetMatch, undoSingleElimAdvance, canUndoSingleElim,
 } from './db'
 
 // In-memory localStorage stub
@@ -269,6 +269,79 @@ describe('getPlayerMatchHistory', () => {
   it('returns empty array for a player with no matches', () => {
     const p = addPlayer('Ghost')
     expect(getPlayerMatchHistory(p.id)).toHaveLength(0)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// resetMatch / undoSingleElimAdvance / canUndoSingleElim
+// ---------------------------------------------------------------------------
+
+describe('resetMatch', () => {
+  it('clears score, winner and resets status to pending', () => {
+    const t = addTournament('Cup', 'round_robin')
+    insertMatches([{ tournament_id: t.id, round: 1, position: 0, player1_id: 'p1', player2_id: 'p2', score1: 21, score2: 10, winner_id: 'p1', status: 'completed' }])
+    const [m] = getMatches(t.id)
+    resetMatch(m.id)
+    const [updated] = getMatches(t.id)
+    expect(updated.status).toBe('pending')
+    expect(updated.score1).toBeNull()
+    expect(updated.winner_id).toBeNull()
+  })
+
+  it('does not affect other matches', () => {
+    const t = addTournament('Cup', 'round_robin')
+    insertMatches([
+      { tournament_id: t.id, round: 1, position: 0, player1_id: 'p1', player2_id: 'p2', score1: 21, score2: 10, winner_id: 'p1', status: 'completed' },
+      { tournament_id: t.id, round: 1, position: 1, player1_id: 'p3', player2_id: 'p4', score1: 15, score2: 21, winner_id: 'p4', status: 'completed' },
+    ])
+    const [m1, m2] = getMatches(t.id)
+    resetMatch(m1.id)
+    expect(getMatches(t.id).find(m => m.id === m2.id)?.status).toBe('completed')
+  })
+})
+
+describe('canUndoSingleElim', () => {
+  it('returns true when next round match is pending', () => {
+    const t = addTournament('Cup', 'single_elimination')
+    insertMatches([
+      { tournament_id: t.id, round: 1, position: 0, player1_id: 'p1', player2_id: 'p2', score1: 21, score2: 10, winner_id: 'p1', status: 'completed' },
+      { tournament_id: t.id, round: 2, position: 0, player1_id: null, player2_id: null, score1: null, score2: null, winner_id: null, status: 'pending' },
+    ])
+    const [m1] = getMatches(t.id)
+    expect(canUndoSingleElim(m1, getMatches(t.id))).toBe(true)
+  })
+
+  it('returns false when next round match is already completed', () => {
+    const t = addTournament('Cup', 'single_elimination')
+    insertMatches([
+      { tournament_id: t.id, round: 1, position: 0, player1_id: 'p1', player2_id: 'p2', score1: 21, score2: 10, winner_id: 'p1', status: 'completed' },
+      { tournament_id: t.id, round: 2, position: 0, player1_id: 'p1', player2_id: 'p3', score1: 21, score2: 15, winner_id: 'p1', status: 'completed' },
+    ])
+    const [m1] = getMatches(t.id)
+    expect(canUndoSingleElim(m1, getMatches(t.id))).toBe(false)
+  })
+
+  it('returns true for the final match (no next round)', () => {
+    const t = addTournament('Cup', 'single_elimination')
+    insertMatches([
+      { tournament_id: t.id, round: 2, position: 0, player1_id: 'p1', player2_id: 'p2', score1: 21, score2: 10, winner_id: 'p1', status: 'completed' },
+    ])
+    const [final] = getMatches(t.id)
+    expect(canUndoSingleElim(final, getMatches(t.id))).toBe(true)
+  })
+})
+
+describe('undoSingleElimAdvance', () => {
+  it('clears the winner slot in the next round match', () => {
+    const t = addTournament('Cup', 'single_elimination')
+    insertMatches([
+      { tournament_id: t.id, round: 1, position: 0, player1_id: 'p1', player2_id: 'p2', score1: 21, score2: 10, winner_id: 'p1', status: 'completed' },
+      { tournament_id: t.id, round: 2, position: 0, player1_id: 'p1', player2_id: null, score1: null, score2: null, winner_id: null, status: 'pending' },
+    ])
+    const [m1] = getMatches(t.id)
+    undoSingleElimAdvance(m1)
+    const final = getMatches(t.id).find(m => m.round === 2)!
+    expect(final.player1_id).toBeNull()
   })
 })
 
