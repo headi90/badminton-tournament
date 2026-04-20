@@ -81,6 +81,7 @@ export default function TournamentDetailPage() {
   }
 
   function handleNextAmericanoRound() {
+    if (matches.length === 0) return
     const currentRound = Math.max(...matches.map(m => m.round))
     const nextRound = generateAmericanoNextRound(id, currentRound + 1, matches, participants)
     db.insertMatches(nextRound)

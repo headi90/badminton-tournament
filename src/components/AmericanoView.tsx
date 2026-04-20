@@ -40,7 +40,7 @@ export default function AmericanoView({ matches, players, onRefresh, finished, t
             </thead>
             <tbody>
               {standings.map((row, i) => (
-                <tr key={row.player.id} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                <tr key={row.player.id} className={i === 0 ? 'bg-green-50' : i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                   <td className="px-4 py-2 text-gray-400">{i + 1}</td>
                   <td className="px-4 py-2 font-medium">{row.player.name}</td>
                   <td className="px-4 py-2 text-center text-gray-500">{row.gamesPlayed}</td>
