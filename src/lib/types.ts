@@ -1,4 +1,4 @@
-export type TournamentFormat = 'single_elimination' | 'round_robin'
+export type TournamentFormat = 'single_elimination' | 'round_robin' | 'americano'
 export type TournamentStatus = 'setup' | 'active' | 'finished'
 export type MatchStatus = 'pending' | 'completed'
 
@@ -31,10 +31,14 @@ export interface Match {
   position: number
   player1_id: string | null
   player2_id: string | null
+  player3_id?: string | null  // americano team 2
+  player4_id?: string | null  // americano team 2
   score1: number | null
   score2: number | null
   winner_id: string | null
   status: MatchStatus
   player1?: Player
   player2?: Player
+  player3?: Player  // americano
+  player4?: Player  // americano
 }

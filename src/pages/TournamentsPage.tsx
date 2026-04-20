@@ -45,7 +45,7 @@ export default function TournamentsPage() {
           className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
         />
         <div className="flex gap-4">
-          {(['single_elimination', 'round_robin'] as TournamentFormat[]).map(f => (
+          {(['single_elimination', 'round_robin', 'americano'] as TournamentFormat[]).map(f => (
             <label key={f} className="flex items-center gap-2 cursor-pointer">
               <input
                 type="radio"
@@ -56,7 +56,7 @@ export default function TournamentsPage() {
                 className="accent-green-600"
               />
               <span className="text-sm text-gray-700">
-                {f === 'single_elimination' ? t('tournaments_format_single') : t('tournaments_format_rr')}
+                {f === 'single_elimination' ? t('tournaments_format_single') : f === 'round_robin' ? t('tournaments_format_rr') : t('tournaments_format_americano')}
               </span>
             </label>
           ))}

@@ -42,7 +42,7 @@ export default function TournamentCard({ t: tournament, onRemove }: Props) {
         </div>
       </div>
       <p className="text-sm text-gray-500 mt-1">
-        {tournament.format === 'single_elimination' ? t('tournaments_format_single') : t('tournaments_format_rr')}
+        {tournament.format === 'single_elimination' ? t('tournaments_format_single') : tournament.format === 'round_robin' ? t('tournaments_format_rr') : t('tournaments_format_americano')}
       </p>
     </Link>
   )

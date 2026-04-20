@@ -11,9 +11,9 @@ export const translations = {
 
     // Welcome
     welcome_title: 'Badminton Tournament',
-    welcome_subtitle: 'Organise single-elimination and round-robin tournaments for your group.',
+    welcome_subtitle: 'Organise single-elimination, round-robin or Americano tournaments for your group.',
     welcome_tournaments_title: 'Tournaments',
-    welcome_tournaments_desc: 'Create and manage brackets or round-robin group stages.',
+    welcome_tournaments_desc: 'Create and manage brackets, round-robin or Americano group stages.',
     welcome_players_title: 'Players',
     welcome_players_desc: 'Keep a roster of players ready to enter any tournament.',
 
@@ -23,6 +23,7 @@ export const translations = {
     tournaments_name_placeholder: 'Tournament name',
     tournaments_format_single: 'Single Elimination',
     tournaments_format_rr: 'Round Robin',
+    tournaments_format_americano: 'Americano',
     tournaments_create: 'Create',
     tournaments_empty: 'No tournaments yet.',
 
@@ -40,6 +41,7 @@ export const translations = {
     detail_start: 'Start Tournament',
     detail_not_found: 'Not found.',
     detail_need_players: 'Need at least 2 players.',
+    detail_need_players_americano: 'Need at least 4 players for Americano.',
 
     // Players page
     players_heading: 'Players',
@@ -57,14 +59,19 @@ export const translations = {
     rr_schedule: 'Schedule',
     rr_col_player: 'Player',
 
+    // Americano
+    americano_standings: 'Standings',
+    americano_schedule: 'Schedule',
+    americano_col_player: 'Player',
+    americano_col_games: 'G',
+    americano_col_points: 'Pts',
+    americano_round: 'Round',
+
     // Tournament card
     tournament_remove: 'Delete',
     tournament_remove_confirm: 'Delete this tournament and all its matches?',
 
     // Match modal
-    tournament_remove: 'Usuń',
-    tournament_remove_confirm: 'Usunąć ten turniej wraz z wszystkimi meczami?',
-
     match_title: 'Enter Match Result',
     match_tied: 'Scores must not be equal.',
     match_cancel: 'Cancel',
@@ -76,9 +83,9 @@ export const translations = {
     nav_tournaments: 'Turnieje',
 
     welcome_title: 'Turniej Badmintona',
-    welcome_subtitle: 'Organizuj turnieje single elimination i round robin dla swojej grupy.',
+    welcome_subtitle: 'Organizuj turnieje single elimination, round robin lub Americano dla swojej grupy.',
     welcome_tournaments_title: 'Turnieje',
-    welcome_tournaments_desc: 'Twórz drabinki i rozgrywki round robin oraz nimi zarządzaj.',
+    welcome_tournaments_desc: 'Twórz drabinki, rozgrywki round robin lub Americano oraz nimi zarządzaj.',
     welcome_players_title: 'Gracze',
     welcome_players_desc: 'Prowadź listę graczy gotowych do udziału w dowolnym turnieju.',
 
@@ -87,6 +94,7 @@ export const translations = {
     tournaments_name_placeholder: 'Nazwa turnieju',
     tournaments_format_single: 'Single Elimination',
     tournaments_format_rr: 'Round Robin',
+    tournaments_format_americano: 'Americano',
     tournaments_create: 'Utwórz',
     tournaments_empty: 'Brak turniejów.',
 
@@ -102,6 +110,7 @@ export const translations = {
     detail_start: 'Rozpocznij turniej',
     detail_not_found: 'Nie znaleziono.',
     detail_need_players: 'Potrzeba co najmniej 2 graczy.',
+    detail_need_players_americano: 'Potrzeba co najmniej 4 graczy do Americano.',
 
     players_heading: 'Gracze',
     players_placeholder: 'Imię gracza',
@@ -115,6 +124,16 @@ export const translations = {
     rr_standings: 'Tabela',
     rr_schedule: 'Harmonogram',
     rr_col_player: 'Gracz',
+
+    americano_standings: 'Tabela',
+    americano_schedule: 'Harmonogram',
+    americano_col_player: 'Gracz',
+    americano_col_games: 'M',
+    americano_col_points: 'Pkt',
+    americano_round: 'Runda',
+
+    tournament_remove: 'Usuń',
+    tournament_remove_confirm: 'Usunąć ten turniej wraz z wszystkimi meczami?',
 
     match_title: 'Wpisz wynik meczu',
     match_tied: 'Wyniki nie mogą być równe.',

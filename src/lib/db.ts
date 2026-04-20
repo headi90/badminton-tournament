@@ -101,6 +101,8 @@ export function getMatches(tournamentId: string): Match[] {
       ...m,
       player1: players.find(p => p.id === m.player1_id),
       player2: players.find(p => p.id === m.player2_id),
+      player3: players.find(p => p.id === m.player3_id),
+      player4: players.find(p => p.id === m.player4_id),
     }))
 }
 

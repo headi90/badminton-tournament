@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { type Tournament, type Player, type Match } from '../lib/types'
 import * as db from '../lib/db'
-import { generateSingleEliminationMatches, generateRoundRobinMatches } from '../lib/tournament'
+import { generateSingleEliminationMatches, generateRoundRobinMatches, generateAmericanoMatches } from '../lib/tournament'
 import BracketView from '../components/BracketView'
 import RoundRobinView from '../components/RoundRobinView'
+import AmericanoView from '../components/AmericanoView'
 import { useLang } from '../lib/i18n'
 
 export default function TournamentDetailPage() {
@@ -39,10 +40,15 @@ export default function TournamentDetailPage() {
   }
 
   function startTournament() {
-    if (participants.length < 2) return alert(t('detail_need_players'))
+    if (tournament!.format === 'americano' && participants.length < 4)
+      return alert(t('detail_need_players_americano'))
+    if (tournament!.format !== 'americano' && participants.length < 2)
+      return alert(t('detail_need_players'))
     const newMatches = tournament!.format === 'single_elimination'
       ? generateSingleEliminationMatches(id!, participants)
-      : generateRoundRobinMatches(id!, participants)
+      : tournament!.format === 'round_robin'
+      ? generateRoundRobinMatches(id!, participants)
+      : generateAmericanoMatches(id!, participants)
     db.insertMatches(newMatches)
     db.updateTournament(id!, { status: 'active' })
     load()
@@ -59,7 +65,9 @@ export default function TournamentDetailPage() {
 
   const formatLabel = tournament.format === 'single_elimination'
     ? t('tournaments_format_single')
-    : t('tournaments_format_rr')
+    : tournament.format === 'round_robin'
+    ? t('tournaments_format_rr')
+    : t('tournaments_format_americano')
 
   const statusLabel = t(`status_${tournament.status}` as Parameters<typeof t>[0])
 
@@ -139,7 +147,9 @@ export default function TournamentDetailPage() {
       {(tournament.status === 'active' || tournament.status === 'finished') && (
         tournament.format === 'single_elimination'
           ? <BracketView matches={matches} onRefresh={load} />
-          : <RoundRobinView matches={matches} players={participants} onRefresh={load} />
+          : tournament.format === 'round_robin'
+          ? <RoundRobinView matches={matches} players={participants} onRefresh={load} />
+          : <AmericanoView matches={matches} players={participants} onRefresh={load} />
       )}
     </div>
   )
