@@ -7,6 +7,7 @@ export default function PlayersPage() {
   const { t } = useLang()
   const [players, setPlayers] = useState<Player[]>([])
   const [name, setName] = useState('')
+  const [duplicate, setDuplicate] = useState(false)
 
   function load() {
     setPlayers(db.getPlayers())
@@ -17,8 +18,13 @@ export default function PlayersPage() {
   function addPlayer() {
     const trimmed = name.trim()
     if (!trimmed) return
+    if (players.some(p => p.name.toLowerCase() === trimmed.toLowerCase())) {
+      setDuplicate(true)
+      return
+    }
     db.addPlayer(trimmed)
     setName('')
+    setDuplicate(false)
     load()
   }
 
@@ -32,12 +38,12 @@ export default function PlayersPage() {
     <div className="max-w-lg mx-auto py-8 px-4">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">{t('players_heading')}</h1>
 
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-2 mb-1">
         <input
           type="text"
           placeholder={t('players_placeholder')}
           value={name}
-          onChange={e => setName(e.target.value)}
+          onChange={e => { setName(e.target.value); setDuplicate(false) }}
           onKeyDown={e => e.key === 'Enter' && addPlayer()}
           className="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
         />
@@ -49,6 +55,9 @@ export default function PlayersPage() {
           {t('players_add')}
         </button>
       </div>
+      {duplicate && (
+        <p className="text-red-500 text-sm mb-4">{t('players_duplicate')}</p>
+      )}
 
       {players.length === 0 ? (
         <p className="text-gray-400 text-center py-8">{t('players_empty')}</p>

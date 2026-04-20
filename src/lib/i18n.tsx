@@ -50,6 +50,7 @@ export const translations = {
     players_empty: 'No players yet.',
     players_remove: 'Remove',
     players_remove_confirm: 'Remove this player?',
+    players_duplicate: 'A player with this name already exists.',
 
     // Bracket
     bracket_round: 'Round',
@@ -118,6 +119,7 @@ export const translations = {
     players_empty: 'Brak graczy.',
     players_remove: 'Usuń',
     players_remove_confirm: 'Usunąć tego gracza?',
+    players_duplicate: 'Gracz o tej nazwie już istnieje.',
 
     bracket_round: 'Runda',
 
