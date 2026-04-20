@@ -90,6 +90,18 @@ describe('tournaments', () => {
     expect(list[1].id).toBe('old1')
   })
 
+  it('addTournament stores optional date and location', () => {
+    const t = addTournament('Cup', 'round_robin', '2026-05-01', 'Sports Hall')
+    expect(getTournament(t.id)?.date).toBe('2026-05-01')
+    expect(getTournament(t.id)?.location).toBe('Sports Hall')
+  })
+
+  it('addTournament works without date and location', () => {
+    const t = addTournament('Cup', 'round_robin')
+    expect(getTournament(t.id)?.date).toBeUndefined()
+    expect(getTournament(t.id)?.location).toBeUndefined()
+  })
+
   it('updateTournament patches fields', () => {
     const t = addTournament('Cup', 'round_robin')
     updateTournament(t.id, { status: 'active' })

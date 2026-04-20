@@ -44,6 +44,11 @@ export default function TournamentCard({ t: tournament, onRemove }: Props) {
       <p className="text-sm text-gray-500 mt-1">
         {tournament.format === 'single_elimination' ? t('tournaments_format_single') : tournament.format === 'round_robin' ? t('tournaments_format_rr') : t('tournaments_format_americano')}
       </p>
+      {(tournament.date || tournament.location) && (
+        <p className="text-xs text-gray-400 mt-1">
+          {[tournament.date, tournament.location].filter(Boolean).join(' · ')}
+        </p>
+      )}
     </Link>
   )
 }

@@ -24,6 +24,7 @@ export const translations = {
     tournaments_format_single: 'Single Elimination',
     tournaments_format_rr: 'Round Robin',
     tournaments_format_americano: 'Americano',
+    tournaments_location_placeholder: 'Location (optional)',
     tournaments_create: 'Create',
     tournaments_empty: 'No tournaments yet.',
 
@@ -121,6 +122,7 @@ export const translations = {
     tournaments_format_single: 'Single Elimination',
     tournaments_format_rr: 'Round Robin',
     tournaments_format_americano: 'Americano',
+    tournaments_location_placeholder: 'Lokalizacja (opcjonalnie)',
     tournaments_create: 'Utwórz',
     tournaments_empty: 'Brak turniejów.',
 

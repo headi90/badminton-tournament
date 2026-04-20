@@ -10,6 +10,8 @@ export default function TournamentsPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([])
   const [name, setName] = useState('')
   const [format, setFormat] = useState<TournamentFormat>('single_elimination')
+  const [date, setDate] = useState('')
+  const [location, setLocation] = useState('')
 
   function load() {
     setTournaments(db.getTournaments())
@@ -25,8 +27,10 @@ export default function TournamentsPage() {
   function createTournament() {
     const trimmed = name.trim()
     if (!trimmed) return
-    db.addTournament(trimmed, format)
+    db.addTournament(trimmed, format, date, location)
     setName('')
+    setDate('')
+    setLocation('')
     load()
   }
 
@@ -60,6 +64,21 @@ export default function TournamentsPage() {
               </span>
             </label>
           ))}
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <input
+            type="date"
+            value={date}
+            onChange={e => setDate(e.target.value)}
+            className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700"
+          />
+          <input
+            type="text"
+            placeholder={t('tournaments_location_placeholder')}
+            value={location}
+            onChange={e => setLocation(e.target.value)}
+            className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+          />
         </div>
         <button
           onClick={createTournament}

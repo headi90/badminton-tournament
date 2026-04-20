@@ -14,6 +14,8 @@ export interface Tournament {
   format: TournamentFormat
   status: TournamentStatus
   created_at: string
+  date?: string
+  location?: string
 }
 
 export interface TournamentPlayer {

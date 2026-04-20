@@ -104,6 +104,11 @@ export default function TournamentDetailPage() {
               {statusLabel}
             </span>
           </p>
+          {(tournament.date || tournament.location) && (
+            <p className="text-xs text-gray-400 mt-0.5">
+              {[tournament.date, tournament.location].filter(Boolean).join(' · ')}
+            </p>
+          )}
         </div>
         {tournament.status === 'active' && (
           <button

@@ -67,9 +67,9 @@ export function getTournament(id: string): Tournament | undefined {
   return load<Tournament>('bt_tournaments').find(t => t.id === id)
 }
 
-export function addTournament(name: string, format: TournamentFormat): Tournament {
+export function addTournament(name: string, format: TournamentFormat, date?: string, location?: string): Tournament {
   const tournaments = load<Tournament>('bt_tournaments')
-  const t: Tournament = { id: uid(), name, format, status: 'setup', created_at: new Date().toISOString() }
+  const t: Tournament = { id: uid(), name, format, status: 'setup', created_at: new Date().toISOString(), date: date || undefined, location: location || undefined }
   save('bt_tournaments', [...tournaments, t])
   return t
 }
