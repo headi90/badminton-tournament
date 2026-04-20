@@ -7,9 +7,10 @@ import { useLang } from '../lib/i18n'
 interface Props {
   matches: Match[]
   onRefresh: () => void
+  finished?: boolean
 }
 
-export default function BracketView({ matches, onRefresh }: Props) {
+export default function BracketView({ matches, onRefresh, finished }: Props) {
   const { t } = useLang()
   const [selected, setSelected] = useState<Match | null>(null)
   const [originalMatch, setOriginalMatch] = useState<Match | null>(null)
@@ -57,9 +58,9 @@ export default function BracketView({ matches, onRefresh }: Props) {
                   <MatchCard
                     key={match.id}
                     match={match}
-                    canEdit={db.canUndoSingleElim(match, matches)}
+                    canEdit={!finished && db.canUndoSingleElim(match, matches)}
                     onEdit={() => openEdit(match)}
-                    onClick={() => match.status === 'pending' && openPending(match)}
+                    onClick={() => !finished && match.status === 'pending' && openPending(match)}
                     editLabel={t('match_edit')}
                   />
                 ))}

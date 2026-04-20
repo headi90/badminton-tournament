@@ -8,9 +8,10 @@ interface Props {
   matches: Match[]
   players: Player[]
   onRefresh: () => void
+  finished?: boolean
 }
 
-export default function RoundRobinView({ matches, players, onRefresh }: Props) {
+export default function RoundRobinView({ matches, players, onRefresh, finished }: Props) {
   const { t } = useLang()
   const [selected, setSelected] = useState<Match | null>(null)
   const standings = computeStandings(matches, players)
@@ -53,10 +54,10 @@ export default function RoundRobinView({ matches, players, onRefresh }: Props) {
             .map(match => (
               <div
                 key={match.id}
-                onClick={() => setSelected(match)}
-                className={`flex items-center justify-between border rounded-lg px-4 py-3 bg-white cursor-pointer hover:border-green-500 ${
-                  match.status === 'completed' ? 'bg-gray-50' : ''
-                }`}
+                onClick={() => !finished && setSelected(match)}
+                className={`flex items-center justify-between border rounded-lg px-4 py-3 bg-white ${
+                  finished ? '' : 'cursor-pointer hover:border-green-500'
+                } ${match.status === 'completed' ? 'bg-gray-50' : ''}`}
               >
                 <span className={`font-medium ${match.winner_id === match.player1_id ? 'text-green-700 font-bold' : 'text-gray-700'}`}>
                   {match.player1?.name ?? 'TBD'}

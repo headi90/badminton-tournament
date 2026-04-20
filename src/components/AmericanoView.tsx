@@ -8,9 +8,10 @@ interface Props {
   matches: Match[]
   players: Player[]
   onRefresh: () => void
+  finished?: boolean
 }
 
-export default function AmericanoView({ matches, players, onRefresh }: Props) {
+export default function AmericanoView({ matches, players, onRefresh, finished }: Props) {
   const { t } = useLang()
   const [selected, setSelected] = useState<Match | null>(null)
   const standings = computeAmericanoStandings(matches, players)
@@ -60,8 +61,10 @@ export default function AmericanoView({ matches, players, onRefresh }: Props) {
                     return (
                       <div
                         key={match.id}
-                        onClick={() => setSelected(match)}
-                        className={`border rounded-lg px-4 py-3 bg-white cursor-pointer hover:border-green-500 ${match.status === 'completed' ? 'bg-gray-50' : ''}`}
+                        onClick={() => !finished && setSelected(match)}
+                        className={`border rounded-lg px-4 py-3 bg-white ${
+                          finished ? '' : 'cursor-pointer hover:border-green-500'
+                        } ${match.status === 'completed' ? 'bg-gray-50' : ''}`}
                       >
                         <div className="flex items-center justify-between">
                           <div className="text-sm">

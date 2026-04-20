@@ -195,10 +195,10 @@ export default function TournamentDetailPage() {
 
       {(tournament.status === 'active' || tournament.status === 'finished') && (
         tournament.format === 'single_elimination'
-          ? <BracketView matches={matches} onRefresh={load} />
+          ? <BracketView matches={matches} onRefresh={load} finished={tournament.status === 'finished'} />
           : tournament.format === 'round_robin'
-          ? <RoundRobinView matches={matches} players={participants} onRefresh={load} />
-          : <AmericanoView matches={matches} players={participants} onRefresh={load} />
+          ? <RoundRobinView matches={matches} players={participants} onRefresh={load} finished={tournament.status === 'finished'} />
+          : <AmericanoView matches={matches} players={participants} onRefresh={load} finished={tournament.status === 'finished'} />
       )}
     </div>
   )
