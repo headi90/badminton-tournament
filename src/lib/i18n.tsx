@@ -8,6 +8,15 @@ export const translations = {
     nav_home: '🏸 Badminton',
     nav_players: 'Players',
     nav_tournaments: 'Tournaments',
+    nav_login: 'Admin Login',
+    nav_logout: 'Logout',
+
+    // Login page
+    login_heading: 'Admin Login',
+    login_email: 'Email',
+    login_password: 'Password',
+    login_submit: 'Sign in',
+    login_error: 'Invalid email or password.',
 
     // Welcome
     welcome_title: 'Badminton Tournament',
@@ -110,6 +119,14 @@ export const translations = {
     nav_home: '🏸 Badminton',
     nav_players: 'Gracze',
     nav_tournaments: 'Turnieje',
+    nav_login: 'Logowanie admina',
+    nav_logout: 'Wyloguj',
+
+    login_heading: 'Logowanie admina',
+    login_email: 'E-mail',
+    login_password: 'Hasło',
+    login_submit: 'Zaloguj',
+    login_error: 'Nieprawidłowy e-mail lub hasło.',
 
     welcome_title: 'Turniej Badmintona',
     welcome_subtitle: 'Organizuj turnieje single elimination, round robin lub Americano dla swojej grupy.',

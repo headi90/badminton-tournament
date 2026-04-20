@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { type Match, type Player } from '../lib/types'
 import { computeStandings } from '../lib/tournament'
+import { useAuth } from '../lib/auth'
 import MatchModal from './MatchModal'
 import { useLang } from '../lib/i18n'
 
@@ -13,6 +14,7 @@ interface Props {
 
 export default function RoundRobinView({ matches, players, onRefresh, finished }: Props) {
   const { t } = useLang()
+  const { isAdmin } = useAuth()
   const [selected, setSelected] = useState<Match | null>(null)
   const standings = computeStandings(matches, players)
 
@@ -54,9 +56,9 @@ export default function RoundRobinView({ matches, players, onRefresh, finished }
             .map(match => (
               <div
                 key={match.id}
-                onClick={() => !finished && setSelected(match)}
+                onClick={() => isAdmin && !finished && setSelected(match)}
                 className={`flex items-center justify-between border rounded-lg px-4 py-3 bg-white ${
-                  finished ? '' : 'cursor-pointer hover:border-green-500'
+                  isAdmin && !finished ? 'cursor-pointer hover:border-green-500' : ''
                 } ${match.status === 'completed' ? 'bg-gray-50' : ''}`}
               >
                 <span className={`font-medium ${match.winner_id === match.player1_id ? 'text-green-700 font-bold' : 'text-gray-700'}`}>

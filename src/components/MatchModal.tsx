@@ -27,18 +27,18 @@ export default function MatchModal({ match, allMatches, format, onClose, onSaved
     ? `${match.player3?.name ?? 'TBD'} & ${match.player4?.name ?? 'TBD'}`
     : (match.player2?.name ?? 'TBD')
 
-  function handleSave() {
+  async function handleSave() {
     if (score1 < 0 || score2 < 0) return
     if (isAmericano) {
-      db.updateMatch(match.id, { score1, score2, status: 'completed' })
+      await db.updateMatch(match.id, { score1, score2, status: 'completed' })
       onSaved()
       return
     }
     if (!match.player1_id || !match.player2_id || tied) return
     const winnerId = score1 > score2 ? match.player1_id : match.player2_id
-    db.updateMatch(match.id, { score1, score2, winner_id: winnerId, status: 'completed' })
+    await db.updateMatch(match.id, { score1, score2, winner_id: winnerId, status: 'completed' })
     if (format === 'single_elimination') {
-      db.advanceSingleElimWinner({ ...match, score1, score2, winner_id: winnerId, status: 'completed' }, allMatches)
+      await db.advanceSingleElimWinner({ ...match, score1, score2, winner_id: winnerId, status: 'completed' }, allMatches)
     }
     onSaved()
   }
@@ -83,7 +83,7 @@ export default function MatchModal({ match, allMatches, format, onClose, onSaved
             {t('match_cancel')}
           </button>
           <button
-            onClick={handleSave}
+            onClick={() => void handleSave()}
             disabled={!canSave}
             className="flex-1 bg-green-600 text-white rounded-lg py-2 hover:bg-green-700 disabled:opacity-50"
           >

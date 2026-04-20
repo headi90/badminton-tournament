@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { type Tournament, type Player, type Match } from '../lib/types'
 import * as db from '../lib/db'
+import { useAuth } from '../lib/auth'
 import {
   generateSingleEliminationMatches,
   generateRoundRobinMatches,
@@ -18,6 +19,7 @@ import { useLang } from '../lib/i18n'
 
 export default function TournamentDetailPage() {
   const { t } = useLang()
+  const { isAdmin } = useAuth()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [tournament, setTournament] = useState<Tournament | null>(null)
@@ -26,43 +28,48 @@ export default function TournamentDetailPage() {
   const [matches, setMatches] = useState<Match[]>([])
   const [podium, setPodium] = useState<{ place: number; name: string }[] | null>(null)
 
-  function load() {
+  async function load() {
     if (!id) return
-    const tour = db.getTournament(id)
+    const [tour, players, tps, ms] = await Promise.all([
+      db.getTournament(id),
+      db.getPlayers(),
+      db.getTournamentPlayers(id),
+      db.getMatches(id),
+    ])
     if (!tour) return
     setTournament(tour)
-    setAllPlayers(db.getPlayers())
-    setParticipants(db.getTournamentPlayers(id).map(tp => tp.player))
-    setMatches(db.getMatches(id))
+    setAllPlayers(players)
+    setParticipants(tps.map(tp => tp.player))
+    setMatches(ms)
   }
 
-  useEffect(() => { load() }, [id])
+  useEffect(() => { void load() }, [id])
 
-  function addParticipant(playerId: string) {
+  async function addParticipant(playerId: string) {
     if (!id) return
-    db.addTournamentPlayer(id, playerId, participants.length + 1)
-    load()
+    await db.addTournamentPlayer(id, playerId, participants.length + 1)
+    void load()
   }
 
-  function addAllParticipants() {
+  async function addAllParticipants() {
     if (!id) return
-    availablePlayers.forEach((p, i) => db.addTournamentPlayer(id!, p.id, participants.length + i + 1))
-    load()
+    await Promise.all(availablePlayers.map((p, i) => db.addTournamentPlayer(id!, p.id, participants.length + i + 1)))
+    void load()
   }
 
-  function removeParticipant(playerId: string) {
+  async function removeParticipant(playerId: string) {
     if (!id) return
-    db.removeTournamentPlayer(id, playerId)
-    load()
+    await db.removeTournamentPlayer(id, playerId)
+    void load()
   }
 
-  function removeAllParticipants() {
+  async function removeAllParticipants() {
     if (!id) return
-    participants.forEach(p => db.removeTournamentPlayer(id!, p.id))
-    load()
+    await Promise.all(participants.map(p => db.removeTournamentPlayer(id!, p.id)))
+    void load()
   }
 
-  function startTournament() {
+  async function startTournament() {
     if (!id || !tournament) return
     if (tournament.format === 'americano' && participants.length < 4)
       return alert(t('detail_need_players_americano'))
@@ -73,25 +80,25 @@ export default function TournamentDetailPage() {
       : tournament.format === 'round_robin'
       ? generateRoundRobinMatches(id, participants)
       : generateAmericanoMatches(id, participants)
-    db.insertMatches(newMatches)
-    db.updateTournament(id, { status: 'active' })
-    load()
+    await db.insertMatches(newMatches)
+    await db.updateTournament(id, { status: 'active' })
+    void load()
   }
 
-  function finishTournament() {
+  async function finishTournament() {
     if (!id || !tournament) return
-    db.updateTournament(id, { status: 'finished' })
-    const freshMatches = db.getMatches(id)
+    await db.updateTournament(id, { status: 'finished' })
+    const freshMatches = await db.getMatches(id)
     setPodium(computePodium(tournament.format, freshMatches, participants))
-    load()
+    void load()
   }
 
-  function handleNextAmericanoRound() {
+  async function handleNextAmericanoRound() {
     if (!id || matches.length === 0) return
     const currentRound = Math.max(...matches.map(m => m.round))
     const nextRound = generateAmericanoNextRound(id, currentRound + 1, matches, participants)
-    db.insertMatches(nextRound)
-    load()
+    await db.insertMatches(nextRound)
+    void load()
   }
 
   if (!id) return <p className="text-center py-16 text-gray-400">{t('detail_not_found')}</p>
@@ -131,9 +138,9 @@ export default function TournamentDetailPage() {
             </p>
           )}
         </div>
-        {tournament.status === 'active' && (
+        {isAdmin && tournament.status === 'active' && (
           <button
-            onClick={finishTournament}
+            onClick={() => void finishTournament()}
             className="text-sm border border-gray-300 text-gray-600 rounded-lg px-3 py-1.5 hover:bg-gray-50"
           >
             {t('detail_mark_finished')}
@@ -141,14 +148,14 @@ export default function TournamentDetailPage() {
         )}
       </div>
 
-      {tournament.status === 'setup' && (
+      {isAdmin && tournament.status === 'setup' && (
         <div className="mb-8 space-y-4">
           {availablePlayers.length > 0 && (
             <div>
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm text-gray-500">{t('detail_add_player')}</p>
                 <button
-                  onClick={addAllParticipants}
+                  onClick={() => void addAllParticipants()}
                   className="text-xs text-green-700 border border-green-600 rounded-full px-3 py-0.5 hover:bg-green-50"
                 >
                   {t('detail_add_all')}
@@ -158,7 +165,7 @@ export default function TournamentDetailPage() {
                 {availablePlayers.map(p => (
                   <button
                     key={p.id}
-                    onClick={() => addParticipant(p.id)}
+                    onClick={() => void addParticipant(p.id)}
                     className="border rounded-full px-3 py-1 text-sm hover:border-green-500 hover:text-green-700"
                   >
                     + {p.name}
@@ -174,7 +181,7 @@ export default function TournamentDetailPage() {
             <h2 className="font-semibold text-gray-700">{t('detail_participants')} ({participants.length})</h2>
             {participants.length > 0 && (
               <button
-                onClick={removeAllParticipants}
+                onClick={() => void removeAllParticipants()}
                 className="text-xs text-red-500 border border-red-400 rounded-full px-3 py-0.5 hover:bg-red-50"
               >
                 {t('detail_remove_all')}
@@ -186,7 +193,7 @@ export default function TournamentDetailPage() {
               {participants.map(p => (
                 <li key={p.id} className="flex items-center justify-between border rounded-lg px-4 py-2 bg-white">
                   <span className="text-gray-700">{p.name}</span>
-                  <button onClick={() => removeParticipant(p.id)} className="text-red-500 text-sm hover:text-red-700">
+                  <button onClick={() => void removeParticipant(p.id)} className="text-red-500 text-sm hover:text-red-700">
                     {t('players_remove')}
                   </button>
                 </li>
@@ -197,12 +204,27 @@ export default function TournamentDetailPage() {
             <p className="text-amber-600 text-sm">{t('detail_americano_remainder')}</p>
           )}
           <button
-            onClick={startTournament}
+            onClick={() => void startTournament()}
             disabled={participants.length < 2}
             className="mt-2 bg-green-600 text-white rounded-lg px-6 py-2 hover:bg-green-700 disabled:opacity-50"
           >
             {t('detail_start')}
           </button>
+        </div>
+      )}
+
+      {!isAdmin && tournament.status === 'setup' && (
+        <div className="mb-8">
+          <h2 className="font-semibold text-gray-700 mb-3">{t('detail_participants')} ({participants.length})</h2>
+          {participants.length === 0 ? (
+            <p className="text-sm text-gray-400">{t('detail_no_players')}</p>
+          ) : (
+            <ul className="space-y-2">
+              {participants.map(p => (
+                <li key={p.id} className="border rounded-lg px-4 py-2 bg-white text-gray-700">{p.name}</li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
 
@@ -225,7 +247,7 @@ export default function TournamentDetailPage() {
               onRefresh={load}
               finished={tournament.status === 'finished'}
               totalRounds={americanoTotalRounds(participants.length)}
-              onNextRound={handleNextAmericanoRound}
+              onNextRound={() => void handleNextAmericanoRound()}
             />
       )}
     </div>

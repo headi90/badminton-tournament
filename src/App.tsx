@@ -1,13 +1,23 @@
-import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, NavLink, useNavigate } from 'react-router-dom'
 import WelcomePage from './pages/WelcomePage'
 import PlayersPage from './pages/PlayersPage'
 import PlayerProfilePage from './pages/PlayerProfilePage'
 import TournamentsPage from './pages/TournamentsPage'
 import TournamentDetailPage from './pages/TournamentDetailPage'
+import LoginPage from './pages/LoginPage'
+import { AuthProvider, useAuth } from './lib/auth'
 import { useLang } from './lib/i18n'
 
 function Nav() {
   const { t, lang, setLang } = useLang()
+  const { isAdmin, logout } = useAuth()
+  const navigate = useNavigate()
+
+  async function handleLogout() {
+    await logout()
+    navigate('/')
+  }
+
   return (
     <nav className="bg-white border-b shadow-sm">
       <div className="max-w-4xl mx-auto px-4 flex items-center h-14 gap-6">
@@ -37,7 +47,7 @@ function Nav() {
           {t('nav_tournaments')}
         </NavLink>
 
-        <div className="ml-auto flex gap-1">
+        <div className="ml-auto flex items-center gap-2">
           {(['en', 'pl'] as const).map(l => (
             <button
               key={l}
@@ -51,6 +61,21 @@ function Nav() {
               {l.toUpperCase()}
             </button>
           ))}
+          {isAdmin ? (
+            <button
+              onClick={handleLogout}
+              className="text-xs text-gray-400 hover:text-gray-700 ml-1"
+            >
+              {t('nav_logout')}
+            </button>
+          ) : (
+            <NavLink
+              to="/login"
+              className="text-xs text-gray-400 hover:text-gray-700 ml-1"
+            >
+              {t('nav_login')}
+            </NavLink>
+          )}
         </div>
       </div>
     </nav>
@@ -60,18 +85,21 @@ function Nav() {
 export default function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-gray-50">
-        <Nav />
-        <main>
-          <Routes>
-            <Route path="/" element={<WelcomePage />} />
-            <Route path="/players" element={<PlayersPage />} />
-            <Route path="/players/:id" element={<PlayerProfilePage />} />
-            <Route path="/tournaments" element={<TournamentsPage />} />
-            <Route path="/tournaments/:id" element={<TournamentDetailPage />} />
-          </Routes>
-        </main>
-      </div>
+      <AuthProvider>
+        <div className="min-h-screen bg-gray-50">
+          <Nav />
+          <main>
+            <Routes>
+              <Route path="/" element={<WelcomePage />} />
+              <Route path="/players" element={<PlayersPage />} />
+              <Route path="/players/:id" element={<PlayerProfilePage />} />
+              <Route path="/tournaments" element={<TournamentsPage />} />
+              <Route path="/tournaments/:id" element={<TournamentDetailPage />} />
+              <Route path="/login" element={<LoginPage />} />
+            </Routes>
+          </main>
+        </div>
+      </AuthProvider>
     </BrowserRouter>
   )
 }

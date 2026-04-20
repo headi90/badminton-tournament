@@ -48,10 +48,13 @@ export default function PlayerProfilePage() {
 
   useEffect(() => {
     if (!id) return
-    const p = db.getPlayers().find(p => p.id === id)
-    if (!p) return
-    setPlayer(p)
-    setHistory(db.getPlayerMatchHistory(id))
+    void (async () => {
+      const players = await db.getPlayers()
+      const p = players.find(p => p.id === id)
+      if (!p) return
+      setPlayer(p)
+      setHistory(await db.getPlayerMatchHistory(id))
+    })()
   }, [id])
 
   if (!player) return <p className="text-center py-16 text-gray-400">{t('detail_not_found')}</p>
@@ -61,7 +64,6 @@ export default function PlayerProfilePage() {
   const wins = headToHead.filter(m => m.winner_id === id).length
   const losses = headToHead.filter(m => m.winner_id && m.winner_id !== id).length
 
-  // group by tournament
   const byTournament: Record<string, { name: string; matches: HistoryMatch[] }> = {}
   for (const m of history) {
     if (!byTournament[m.tournament_id]) byTournament[m.tournament_id] = { name: m.tournamentName, matches: [] }

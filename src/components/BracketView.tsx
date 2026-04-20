@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { type Match } from '../lib/types'
 import * as db from '../lib/db'
+import { useAuth } from '../lib/auth'
 import MatchModal from './MatchModal'
 import { useLang } from '../lib/i18n'
 
@@ -12,6 +13,7 @@ interface Props {
 
 export default function BracketView({ matches, onRefresh, finished }: Props) {
   const { t } = useLang()
+  const { isAdmin } = useAuth()
   const [selected, setSelected] = useState<Match | null>(null)
   const [originalMatch, setOriginalMatch] = useState<Match | null>(null)
 
@@ -20,15 +22,17 @@ export default function BracketView({ matches, onRefresh, finished }: Props) {
     setOriginalMatch(null)
   }
 
-  function openEdit(match: Match) {
-    db.undoSingleElimAdvance(match)
+  async function openEdit(match: Match) {
+    await db.undoSingleElimAdvance(match)
+    onRefresh()
     setOriginalMatch(match)
     setSelected(match)
   }
 
-  function handleClose() {
+  async function handleClose() {
     if (originalMatch) {
-      db.advanceSingleElimWinner(originalMatch, matches)
+      await db.advanceSingleElimWinner(originalMatch, matches)
+      onRefresh()
     }
     setSelected(null)
     setOriginalMatch(null)
@@ -58,9 +62,9 @@ export default function BracketView({ matches, onRefresh, finished }: Props) {
                   <MatchCard
                     key={match.id}
                     match={match}
-                    canEdit={!finished && db.canUndoSingleElim(match, matches)}
-                    onEdit={() => openEdit(match)}
-                    onClick={() => !finished && match.status === 'pending' && openPending(match)}
+                    canEdit={isAdmin && !finished && db.canUndoSingleElim(match, matches)}
+                    onEdit={() => void openEdit(match)}
+                    onClick={() => isAdmin && !finished && match.status === 'pending' && openPending(match)}
                     editLabel={t('match_edit')}
                   />
                 ))}
@@ -74,7 +78,7 @@ export default function BracketView({ matches, onRefresh, finished }: Props) {
           match={selected}
           allMatches={matches}
           format="single_elimination"
-          onClose={handleClose}
+          onClose={() => void handleClose()}
           onSaved={handleSaved}
         />
       )}
