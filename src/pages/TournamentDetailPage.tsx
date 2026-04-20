@@ -34,6 +34,11 @@ export default function TournamentDetailPage() {
     load()
   }
 
+  function addAllParticipants() {
+    availablePlayers.forEach((p, i) => db.addTournamentPlayer(id!, p.id, participants.length + i + 1))
+    load()
+  }
+
   function removeParticipant(playerId: string) {
     db.removeTournamentPlayer(id!, playerId)
     load()
@@ -104,7 +109,15 @@ export default function TournamentDetailPage() {
         <div className="mb-8 space-y-4">
           {availablePlayers.length > 0 && (
             <div>
-              <p className="text-sm text-gray-500 mb-2">{t('detail_add_player')}</p>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm text-gray-500">{t('detail_add_player')}</p>
+                <button
+                  onClick={addAllParticipants}
+                  className="text-xs text-green-700 border border-green-600 rounded-full px-3 py-0.5 hover:bg-green-50"
+                >
+                  {t('detail_add_all')}
+                </button>
+              </div>
               <div className="flex flex-wrap gap-2">
                 {availablePlayers.map(p => (
                   <button
