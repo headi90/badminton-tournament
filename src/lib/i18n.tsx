@@ -85,6 +85,7 @@ export const translations = {
     americano_col_games: 'G',
     americano_col_points: 'Pts',
     americano_round: 'Round',
+    americano_next_round: 'Generate Next Round',
 
     // Tournament card
     tournament_remove: 'Delete',
@@ -177,6 +178,7 @@ export const translations = {
     americano_col_games: 'M',
     americano_col_points: 'Pkt',
     americano_round: 'Runda',
+    americano_next_round: 'Generuj następną rundę',
 
     tournament_remove: 'Usuń',
     tournament_remove_confirm: 'Usunąć ten turniej wraz z wszystkimi meczami?',

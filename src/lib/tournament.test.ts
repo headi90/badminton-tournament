@@ -3,9 +3,11 @@ import {
   generateSingleEliminationMatches,
   generateRoundRobinMatches,
   generateAmericanoMatches,
+  generateAmericanoNextRound,
   computeStandings,
   computeAmericanoStandings,
   computePodium,
+  americanoTotalRounds,
 } from './tournament'
 import type { Match, Player } from './types'
 
@@ -118,43 +120,98 @@ describe('generateRoundRobinMatches', () => {
 // ---------------------------------------------------------------------------
 
 describe('generateAmericanoMatches', () => {
-  it('generates (n-1) rounds for multiples of 4', () => {
+  it('generates only round 1', () => {
     const players = makePlayers(8)
     const matches = generateAmericanoMatches('t1', players)
     const rounds = new Set(matches.map(m => m.round))
-    expect(rounds.size).toBe(7) // n-1 = 7 rounds
+    expect(rounds.size).toBe(1)
+    expect([...rounds][0]).toBe(1)
   })
 
-  it('each round has floor(n/4) courts', () => {
+  it('round 1 has floor(n/4) courts', () => {
     const players = makePlayers(8)
     const matches = generateAmericanoMatches('t1', players)
-    const byRound: Record<number, number> = {}
-    for (const m of matches) byRound[m.round] = (byRound[m.round] ?? 0) + 1
-    for (const count of Object.values(byRound)) {
-      expect(count).toBe(2) // 8/4 = 2 courts
-    }
+    expect(matches).toHaveLength(2) // 8/4 = 2 courts
   })
 
-  it('each player appears exactly once per round (8-player)', () => {
+  it('pairs 1st & 3rd vs 2nd & 4th by seed (4 players)', () => {
+    const players = makePlayers(4)
+    const matches = generateAmericanoMatches('t1', players)
+    expect(matches).toHaveLength(1)
+    const m = matches[0]
+    // team 1: p1 & p3, team 2: p2 & p4
+    expect(m.player1_id).toBe('p1')
+    expect(m.player2_id).toBe('p3')
+    expect(m.player3_id).toBe('p2')
+    expect(m.player4_id).toBe('p4')
+  })
+
+  it('each player appears exactly once in round 1 (8 players)', () => {
     const players = makePlayers(8)
     const matches = generateAmericanoMatches('t1', players)
-    const rounds = Array.from(new Set(matches.map(m => m.round)))
-    for (const round of rounds) {
-      const inRound = matches.filter(m => m.round === round)
-      const ids = inRound.flatMap(m => [m.player1_id, m.player2_id, m.player3_id, m.player4_id])
-      const unique = new Set(ids.filter(Boolean))
-      expect(unique.size).toBe(8)
-    }
+    const ids = matches.flatMap(m => [m.player1_id, m.player2_id, m.player3_id, m.player4_id])
+    const unique = new Set(ids.filter(Boolean))
+    expect(unique.size).toBe(8)
   })
 
   it('silently excludes remainder players when n is not a multiple of 4', () => {
-    // 6 players → floor(6/4) = 1 court, 2 players per round are excluded
     const players = makePlayers(6)
     const matches = generateAmericanoMatches('t1', players)
-    const round1 = matches.filter(m => m.round === 1)
-    expect(round1).toHaveLength(1)
-    const inRound = round1.flatMap(m => [m.player1_id, m.player2_id, m.player3_id, m.player4_id])
-    expect(inRound.filter(Boolean)).toHaveLength(4)
+    expect(matches).toHaveLength(1) // floor(6/4) = 1 court
+    const ids = matches.flatMap(m => [m.player1_id, m.player2_id, m.player3_id, m.player4_id])
+    expect(ids.filter(Boolean)).toHaveLength(4)
+  })
+})
+
+describe('generateAmericanoNextRound', () => {
+  function americanoMatch(overrides: Partial<Match>): Match {
+    return {
+      id: 'm1', tournament_id: 't1', round: 1, position: 0,
+      player1_id: 'p1', player2_id: 'p3', player3_id: 'p2', player4_id: 'p4',
+      score1: null, score2: null, winner_id: null, status: 'completed',
+      ...overrides,
+    }
+  }
+
+  it('pairs by standings: highest & 3rd vs 2nd & 4th', () => {
+    const players = makePlayers(4)
+    // After round 1: p1=21pts, p3=21pts, p2=10pts, p4=10pts (team1 won)
+    const match = americanoMatch({ score1: 21, score2: 10, status: 'completed' })
+    const nextMatches = generateAmericanoNextRound('t1', 2, [match as Match], players)
+    expect(nextMatches).toHaveLength(1)
+    expect(nextMatches[0].round).toBe(2)
+    // standings: p1=21, p3=21, p2=10, p4=10 → ranked order p1,p3,p2,p4
+    // team1: rank[0]&rank[2] = p1&p2, team2: rank[1]&rank[3] = p3&p4
+    const m = nextMatches[0]
+    const team1 = [m.player1_id, m.player2_id].sort()
+    const team2 = [m.player3_id, m.player4_id].sort()
+    expect(team1).toEqual(['p1', 'p2'])
+    expect(team2).toEqual(['p3', 'p4'])
+  })
+
+  it('assigns the correct round number', () => {
+    const players = makePlayers(4)
+    const match = americanoMatch({ score1: 15, score2: 10, status: 'completed' })
+    const nextMatches = generateAmericanoNextRound('t1', 3, [match as Match], players)
+    expect(nextMatches[0].round).toBe(3)
+  })
+
+  it('generates floor(n/4) courts', () => {
+    const players = makePlayers(8)
+    const matches: Match[] = [
+      americanoMatch({ id: 'm1', player1_id: 'p1', player2_id: 'p3', player3_id: 'p2', player4_id: 'p4', score1: 21, score2: 10, status: 'completed' }),
+      americanoMatch({ id: 'm2', position: 1, player1_id: 'p5', player2_id: 'p7', player3_id: 'p6', player4_id: 'p8', score1: 15, score2: 12, status: 'completed' }),
+    ]
+    const nextMatches = generateAmericanoNextRound('t1', 2, matches, players)
+    expect(nextMatches).toHaveLength(2)
+  })
+})
+
+describe('americanoTotalRounds', () => {
+  it('returns n-1 for n players', () => {
+    expect(americanoTotalRounds(4)).toBe(3)
+    expect(americanoTotalRounds(8)).toBe(7)
+    expect(americanoTotalRounds(6)).toBe(5)
   })
 })
 
