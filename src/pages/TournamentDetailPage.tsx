@@ -39,26 +39,31 @@ export default function TournamentDetailPage() {
   useEffect(() => { load() }, [id])
 
   function addParticipant(playerId: string) {
+    if (!id) return
     db.addTournamentPlayer(id, playerId, participants.length + 1)
     load()
   }
 
   function addAllParticipants() {
-    availablePlayers.forEach((p, i) => db.addTournamentPlayer(id, p.id, participants.length + i + 1))
+    if (!id) return
+    availablePlayers.forEach((p, i) => db.addTournamentPlayer(id!, p.id, participants.length + i + 1))
     load()
   }
 
   function removeParticipant(playerId: string) {
+    if (!id) return
     db.removeTournamentPlayer(id, playerId)
     load()
   }
 
   function removeAllParticipants() {
-    participants.forEach(p => db.removeTournamentPlayer(id, p.id))
+    if (!id) return
+    participants.forEach(p => db.removeTournamentPlayer(id!, p.id))
     load()
   }
 
   function startTournament() {
+    if (!id || !tournament) return
     if (tournament.format === 'americano' && participants.length < 4)
       return alert(t('detail_need_players_americano'))
     if (tournament.format !== 'americano' && participants.length < 2)
@@ -74,6 +79,7 @@ export default function TournamentDetailPage() {
   }
 
   function finishTournament() {
+    if (!id || !tournament) return
     db.updateTournament(id, { status: 'finished' })
     const freshMatches = db.getMatches(id)
     setPodium(computePodium(tournament.format, freshMatches, participants))
@@ -81,7 +87,7 @@ export default function TournamentDetailPage() {
   }
 
   function handleNextAmericanoRound() {
-    if (matches.length === 0) return
+    if (!id || matches.length === 0) return
     const currentRound = Math.max(...matches.map(m => m.round))
     const nextRound = generateAmericanoNextRound(id, currentRound + 1, matches, participants)
     db.insertMatches(nextRound)
