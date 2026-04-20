@@ -57,8 +57,9 @@ export default function PlayerProfilePage() {
   if (!player) return <p className="text-center py-16 text-gray-400">{t('detail_not_found')}</p>
 
   const completed = history.filter(m => m.status === 'completed')
-  const wins = completed.filter(m => m.winner_id === id).length
-  const losses = completed.filter(m => m.winner_id && m.winner_id !== id && (m.player1_id === id || m.player2_id === id)).length
+  const headToHead = completed.filter(m => !m.player3_id)
+  const wins = headToHead.filter(m => m.winner_id === id).length
+  const losses = headToHead.filter(m => m.winner_id && m.winner_id !== id).length
 
   // group by tournament
   const byTournament: Record<string, { name: string; matches: HistoryMatch[] }> = {}
@@ -80,10 +81,10 @@ export default function PlayerProfilePage() {
         <h1 className="text-2xl font-bold text-gray-800">{player.name}</h1>
       </div>
 
-      {completed.length > 0 && (
+      {headToHead.length > 0 && (
         <div className="grid grid-cols-3 gap-3 mb-8">
           <div className="bg-white border rounded-xl p-3 text-center">
-            <p className="text-2xl font-bold text-gray-800">{completed.length}</p>
+            <p className="text-2xl font-bold text-gray-800">{headToHead.length}</p>
             <p className="text-xs text-gray-400">{t('profile_games')}</p>
           </div>
           <div className="bg-white border rounded-xl p-3 text-center">
@@ -101,8 +102,8 @@ export default function PlayerProfilePage() {
         <p className="text-gray-400 text-center py-8">{t('profile_no_history')}</p>
       ) : (
         <div className="space-y-6">
-          {Object.values(byTournament).map(({ name, matches }) => (
-            <div key={name}>
+          {Object.entries(byTournament).map(([tournamentId, { name, matches }]) => (
+            <div key={tournamentId}>
               <p className="text-xs font-semibold text-gray-400 uppercase mb-2">{name}</p>
               <div className="space-y-2">
                 {matches.map(m => {

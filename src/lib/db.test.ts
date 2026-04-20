@@ -102,6 +102,12 @@ describe('tournaments', () => {
     expect(getTournament(t.id)?.location).toBeUndefined()
   })
 
+  it('addTournament treats empty string date/location as undefined', () => {
+    const t = addTournament('Cup', 'round_robin', '', '')
+    expect(getTournament(t.id)?.date).toBeUndefined()
+    expect(getTournament(t.id)?.location).toBeUndefined()
+  })
+
   it('updateTournament patches fields', () => {
     const t = addTournament('Cup', 'round_robin')
     updateTournament(t.id, { status: 'active' })
@@ -301,6 +307,15 @@ describe('resetMatch', () => {
 })
 
 describe('canUndoSingleElim', () => {
+  it('returns false for a pending match', () => {
+    const t = addTournament('Cup', 'single_elimination')
+    insertMatches([
+      { tournament_id: t.id, round: 1, position: 0, player1_id: 'p1', player2_id: 'p2', score1: null, score2: null, winner_id: null, status: 'pending' },
+    ])
+    const [m1] = getMatches(t.id)
+    expect(canUndoSingleElim(m1, getMatches(t.id))).toBe(false)
+  })
+
   it('returns true when next round match is pending', () => {
     const t = addTournament('Cup', 'single_elimination')
     insertMatches([
@@ -332,6 +347,16 @@ describe('canUndoSingleElim', () => {
 })
 
 describe('undoSingleElimAdvance', () => {
+  it('is a no-op for the final match (no next round exists)', () => {
+    const t = addTournament('Cup', 'single_elimination')
+    insertMatches([
+      { tournament_id: t.id, round: 1, position: 0, player1_id: 'p1', player2_id: 'p2', score1: 21, score2: 10, winner_id: 'p1', status: 'completed' },
+    ])
+    const [final] = getMatches(t.id)
+    expect(() => undoSingleElimAdvance(final)).not.toThrow()
+    expect(getMatches(t.id)[0].status).toBe('completed')
+  })
+
   it('clears the winner slot in the next round match', () => {
     const t = addTournament('Cup', 'single_elimination')
     insertMatches([
