@@ -119,8 +119,8 @@ export async function insertMatches(matches: Omit<Match, 'id' | 'player1' | 'pla
 }
 
 export async function updateMatch(id: string, patch: Partial<Match>): Promise<void> {
-  const { player1, player2, player3, player4, ...rest } = patch
-  void player1; void player2; void player3; void player4
+  const { player1: _p1, player2: _p2, player3: _p3, player4: _p4, ...rest } = patch
+  void _p1; void _p2; void _p3; void _p4
   await supabase.from('matches').update(rest).eq('id', id)
 }
 

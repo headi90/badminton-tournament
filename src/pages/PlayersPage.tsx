@@ -47,7 +47,7 @@ export default function PlayersPage() {
         <h1 className="text-2xl font-bold text-gray-800">{t('players_heading')}</h1>
         {players.length > 0 && (
           <button
-            onClick={removeAllPlayers}
+            onClick={() => void removeAllPlayers()}
             className="text-xs text-red-500 border border-red-400 rounded-full px-3 py-0.5 hover:bg-red-50"
           >
             {t('detail_remove_all')}
