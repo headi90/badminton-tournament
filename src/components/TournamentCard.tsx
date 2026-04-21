@@ -10,7 +10,7 @@ const statusColors: Record<string, string> = {
 
 interface Props {
   t: Tournament
-  onRemove?: (id: string) => void
+  onRemove: (id: string) => void
 }
 
 export default function TournamentCard({ t: tournament, onRemove }: Props) {
@@ -18,7 +18,6 @@ export default function TournamentCard({ t: tournament, onRemove }: Props) {
 
   function handleRemove(e: React.MouseEvent) {
     e.preventDefault()
-    if (!onRemove) return
     if (!confirm(t('tournament_remove_confirm'))) return
     onRemove(tournament.id)
   }
@@ -34,14 +33,12 @@ export default function TournamentCard({ t: tournament, onRemove }: Props) {
           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[tournament.status]}`}>
             {t(`status_${tournament.status}` as Parameters<typeof t>[0])}
           </span>
-          {onRemove && (
-            <button
-              onClick={handleRemove}
-              className="text-red-400 hover:text-red-600 text-sm px-1"
-            >
-              ✕
-            </button>
-          )}
+          <button
+            onClick={handleRemove}
+            className="text-red-400 hover:text-red-600 text-sm px-1"
+          >
+            ✕
+          </button>
         </div>
       </div>
       <p className="text-sm text-gray-500 mt-1">

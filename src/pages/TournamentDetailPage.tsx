@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { type Tournament, type Player, type Match } from '../lib/types'
 import * as db from '../lib/db'
-import { useAuth } from '../lib/auth'
 import {
   generateSingleEliminationMatches,
   generateRoundRobinMatches,
@@ -19,7 +18,6 @@ import { useLang } from '../lib/i18n'
 
 export default function TournamentDetailPage() {
   const { t } = useLang()
-  const { isAdmin } = useAuth()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [tournament, setTournament] = useState<Tournament | null>(null)
@@ -138,7 +136,7 @@ export default function TournamentDetailPage() {
             </p>
           )}
         </div>
-        {isAdmin && tournament.status === 'active' && (
+        {tournament.status === 'active' && (
           <button
             onClick={() => void finishTournament()}
             className="text-sm border border-gray-300 text-gray-600 rounded-lg px-3 py-1.5 hover:bg-gray-50"
@@ -148,7 +146,7 @@ export default function TournamentDetailPage() {
         )}
       </div>
 
-      {isAdmin && tournament.status === 'setup' && (
+      {tournament.status === 'setup' && (
         <div className="mb-8 space-y-4">
           {availablePlayers.length > 0 && (
             <div>
@@ -213,20 +211,6 @@ export default function TournamentDetailPage() {
         </div>
       )}
 
-      {!isAdmin && tournament.status === 'setup' && (
-        <div className="mb-8">
-          <h2 className="font-semibold text-gray-700 mb-3">{t('detail_participants')} ({participants.length})</h2>
-          {participants.length === 0 ? (
-            <p className="text-sm text-gray-400">{t('detail_no_players')}</p>
-          ) : (
-            <ul className="space-y-2">
-              {participants.map(p => (
-                <li key={p.id} className="border rounded-lg px-4 py-2 bg-white text-gray-700">{p.name}</li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
 
       {podium && (
         <PodiumModal

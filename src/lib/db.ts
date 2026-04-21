@@ -9,7 +9,8 @@ export async function getPlayers(): Promise<Player[]> {
 }
 
 export async function addPlayer(name: string): Promise<Player> {
-  const { data } = await supabase.from('players').insert({ name }).select().single()
+  const { data, error } = await supabase.from('players').insert({ name }).select().single()
+  if (error || !data) throw error ?? new Error('addPlayer returned no data')
   return data as Player
 }
 
@@ -48,16 +49,17 @@ export async function getTournaments(): Promise<Tournament[]> {
 }
 
 export async function getTournament(id: string): Promise<Tournament | null> {
-  const { data } = await supabase.from('tournaments').select('*').eq('id', id).single()
+  const { data } = await supabase.from('tournaments').select('*').eq('id', id).maybeSingle()
   return (data as Tournament | null) ?? null
 }
 
 export async function addTournament(name: string, format: TournamentFormat, date?: string, location?: string): Promise<Tournament> {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('tournaments')
     .insert({ name, format, status: 'setup', date: date || null, location: location || null })
     .select()
     .single()
+  if (error || !data) throw error ?? new Error('addTournament returned no data')
   return data as Tournament
 }
 
@@ -117,7 +119,8 @@ export async function insertMatches(matches: Omit<Match, 'id' | 'player1' | 'pla
 }
 
 export async function updateMatch(id: string, patch: Partial<Match>): Promise<void> {
-  const { player1: _p1, player2: _p2, player3: _p3, player4: _p4, ...rest } = patch as Match
+  const { player1, player2, player3, player4, ...rest } = patch
+  void player1; void player2; void player3; void player4
   await supabase.from('matches').update(rest).eq('id', id)
 }
 
@@ -134,7 +137,7 @@ export async function undoSingleElimAdvance(match: Match): Promise<void> {
     .eq('tournament_id', match.tournament_id)
     .eq('round', nextRound)
     .eq('position', nextPos)
-    .single()
+    .maybeSingle()
   if (!data) return
   await updateMatch((data as Match).id, { [slot]: null })
 }

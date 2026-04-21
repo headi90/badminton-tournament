@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { type Match, type Player } from '../lib/types'
 import { computeAmericanoStandings } from '../lib/tournament'
-import { useAuth } from '../lib/auth'
 import MatchModal from './MatchModal'
 import { useLang } from '../lib/i18n'
 
@@ -16,7 +15,6 @@ interface Props {
 
 export default function AmericanoView({ matches, players, onRefresh, finished, totalRounds, onNextRound }: Props) {
   const { t } = useLang()
-  const { isAdmin } = useAuth()
   const [selected, setSelected] = useState<Match | null>(null)
   const standings = computeAmericanoStandings(matches, players)
 
@@ -24,7 +22,7 @@ export default function AmericanoView({ matches, players, onRefresh, finished, t
   const currentRound = rounds.length > 0 ? Math.max(...rounds) : 0
   const currentRoundMatches = matches.filter(m => m.round === currentRound)
   const currentRoundComplete = currentRoundMatches.length > 0 && currentRoundMatches.every(m => m.status === 'completed')
-  const canAddNextRound = isAdmin && !finished && currentRoundComplete && currentRound < totalRounds
+  const canAddNextRound = !finished && currentRoundComplete && currentRound < totalRounds
 
   return (
     <div className="space-y-8">
@@ -73,9 +71,9 @@ export default function AmericanoView({ matches, players, onRefresh, finished, t
                   .map(match => (
                     <div
                       key={match.id}
-                      onClick={() => isAdmin && !finished && setSelected(match)}
+                      onClick={() => !finished && setSelected(match)}
                       className={`border rounded-lg px-4 py-3 bg-white ${
-                        isAdmin && !finished ? 'cursor-pointer hover:border-green-500' : ''
+                        !finished ? 'cursor-pointer hover:border-green-500' : ''
                       } ${match.status === 'completed' ? 'bg-gray-50' : ''}`}
                     >
                       <div className="flex items-center justify-between">
