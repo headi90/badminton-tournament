@@ -1,143 +1,181 @@
+import { supabase } from './supabase'
 import type { Player, Tournament, TournamentFormat, Match, TournamentPlayer } from './types'
-
-function uid(): string {
-  return crypto.randomUUID()
-}
-
-function load<T>(key: string): T[] {
-  try {
-    return JSON.parse(localStorage.getItem(key) ?? '[]')
-  } catch {
-    return []
-  }
-}
-
-function save<T>(key: string, data: T[]): void {
-  localStorage.setItem(key, JSON.stringify(data))
-}
 
 // --- Players ---
 
 export async function getPlayers(): Promise<Player[]> {
-  return load<Player>('bt_players').sort((a, b) => a.created_at.localeCompare(b.created_at))
+  const { data, error } = await supabase
+    .from('players')
+    .select('*')
+    .order('created_at', { ascending: true })
+  if (error) throw error
+  return data
 }
 
 export async function addPlayer(name: string): Promise<Player> {
-  const players = load<Player>('bt_players')
-  const player: Player = { id: uid(), name, created_at: new Date().toISOString() }
-  save('bt_players', [...players, player])
-  return player
+  const { data, error } = await supabase
+    .from('players')
+    .insert({ name })
+    .select()
+    .single()
+  if (error) throw error
+  return data
 }
 
 export async function removePlayer(id: string): Promise<void> {
-  save('bt_players', load<Player>('bt_players').filter(p => p.id !== id))
+  const { error } = await supabase.from('players').delete().eq('id', id)
+  if (error) throw error
 }
 
 export async function getPlayerMatchHistory(playerId: string): Promise<(Match & { tournamentName: string })[]> {
-  const allMatches = load<Match>('bt_matches')
-  const tournaments = load<Tournament>('bt_tournaments')
-  const players = load<Player>('bt_players')
-  return allMatches
-    .filter(m =>
-      m.player1_id === playerId || m.player2_id === playerId ||
-      m.player3_id === playerId || m.player4_id === playerId
-    )
-    .map(m => ({
-      ...m,
-      player1: players.find(p => p.id === m.player1_id),
-      player2: players.find(p => p.id === m.player2_id),
-      player3: players.find(p => p.id === m.player3_id),
-      player4: players.find(p => p.id === m.player4_id),
-      tournamentName: tournaments.find(t => t.id === m.tournament_id)?.name ?? '—',
-    }))
-    .sort((a, b) => a.tournament_id.localeCompare(b.tournament_id) || a.round - b.round || a.position - b.position)
+  const { data: matches, error: matchError } = await supabase
+    .from('matches')
+    .select('*')
+    .or(`player1_id.eq.${playerId},player2_id.eq.${playerId},player3_id.eq.${playerId},player4_id.eq.${playerId}`)
+    .order('tournament_id')
+    .order('round')
+    .order('position')
+  if (matchError) throw matchError
+
+  const tournamentIds = [...new Set(matches.map(m => m.tournament_id))]
+  const playerIds = [...new Set(matches.flatMap(m =>
+    [m.player1_id, m.player2_id, m.player3_id, m.player4_id].filter(Boolean)
+  ))]
+
+  const [{ data: tournaments, error: tError }, { data: players, error: pError }] = await Promise.all([
+    supabase.from('tournaments').select('id, name').in('id', tournamentIds),
+    supabase.from('players').select('*').in('id', playerIds),
+  ])
+  if (tError) throw tError
+  if (pError) throw pError
+
+  return matches.map(m => ({
+    ...m,
+    player1: players!.find(p => p.id === m.player1_id),
+    player2: players!.find(p => p.id === m.player2_id),
+    player3: players!.find(p => p.id === m.player3_id),
+    player4: players!.find(p => p.id === m.player4_id),
+    tournamentName: tournaments!.find(t => t.id === m.tournament_id)?.name ?? '—',
+  }))
 }
 
 // --- Tournaments ---
 
 export async function getTournaments(): Promise<Tournament[]> {
-  return load<Tournament>('bt_tournaments').sort((a, b) => b.created_at.localeCompare(a.created_at))
+  const { data, error } = await supabase
+    .from('tournaments')
+    .select('*')
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data
 }
 
 export async function getTournament(id: string): Promise<Tournament | null> {
-  return load<Tournament>('bt_tournaments').find(t => t.id === id) ?? null
+  const { data, error } = await supabase
+    .from('tournaments')
+    .select('*')
+    .eq('id', id)
+    .single()
+  if (error) return null
+  return data
 }
 
 export async function addTournament(name: string, format: TournamentFormat, date?: string, location?: string): Promise<Tournament> {
-  const tournaments = load<Tournament>('bt_tournaments')
-  const t: Tournament = { id: uid(), name, format, status: 'setup', created_at: new Date().toISOString(), date: date || undefined, location: location || undefined }
-  save('bt_tournaments', [...tournaments, t])
-  return t
+  const { data, error } = await supabase
+    .from('tournaments')
+    .insert({ name, format, status: 'setup', date: date || null, location: location || null })
+    .select()
+    .single()
+  if (error) throw error
+  return data
 }
 
 export async function updateTournament(id: string, patch: Partial<Tournament>): Promise<void> {
-  save('bt_tournaments', load<Tournament>('bt_tournaments').map(t => t.id === id ? { ...t, ...patch } : t))
+  const { error } = await supabase.from('tournaments').update(patch).eq('id', id)
+  if (error) throw error
 }
 
 export async function removeTournament(id: string): Promise<void> {
-  save('bt_tournaments', load<Tournament>('bt_tournaments').filter(t => t.id !== id))
-  save('bt_tournament_players', load<TournamentPlayer>('bt_tournament_players').filter(tp => tp.tournament_id !== id))
-  save('bt_matches', load<Match>('bt_matches').filter(m => m.tournament_id !== id))
+  const { error } = await supabase.from('tournaments').delete().eq('id', id)
+  if (error) throw error
 }
 
 // --- Tournament Players ---
 
 export async function getTournamentPlayers(tournamentId: string): Promise<(TournamentPlayer & { player: Player })[]> {
-  const all = load<TournamentPlayer>('bt_tournament_players').filter(tp => tp.tournament_id === tournamentId)
-  const players = load<Player>('bt_players')
-  return all
-    .sort((a, b) => a.seed - b.seed)
-    .map(tp => ({ ...tp, player: players.find(p => p.id === tp.player_id) }))
-    .filter((tp): tp is TournamentPlayer & { player: Player } => tp.player !== undefined)
+  const { data, error } = await supabase
+    .from('tournament_players')
+    .select('*, player:players(*)')
+    .eq('tournament_id', tournamentId)
+    .order('seed', { ascending: true })
+  if (error) throw error
+  return data.filter((tp): tp is TournamentPlayer & { player: Player } => tp.player !== null)
 }
 
 export async function addTournamentPlayer(tournamentId: string, playerId: string, seed: number): Promise<void> {
-  const all = load<TournamentPlayer>('bt_tournament_players')
-  const entry: TournamentPlayer = { id: uid(), tournament_id: tournamentId, player_id: playerId, seed }
-  save('bt_tournament_players', [...all, entry])
+  const { error } = await supabase
+    .from('tournament_players')
+    .insert({ tournament_id: tournamentId, player_id: playerId, seed })
+  if (error) throw error
 }
 
 export async function removeTournamentPlayer(tournamentId: string, playerId: string): Promise<void> {
-  save(
-    'bt_tournament_players',
-    load<TournamentPlayer>('bt_tournament_players').filter(
-      tp => !(tp.tournament_id === tournamentId && tp.player_id === playerId)
-    )
-  )
+  const { error } = await supabase
+    .from('tournament_players')
+    .delete()
+    .eq('tournament_id', tournamentId)
+    .eq('player_id', playerId)
+  if (error) throw error
 }
 
 // --- Matches ---
 
 export async function getMatches(tournamentId: string): Promise<Match[]> {
-  const matches = load<Match>('bt_matches').filter(m => m.tournament_id === tournamentId)
-  const players = load<Player>('bt_players')
-  return matches
-    .sort((a, b) => a.round - b.round || a.position - b.position)
-    .map(m => ({
-      ...m,
-      player1: players.find(p => p.id === m.player1_id),
-      player2: players.find(p => p.id === m.player2_id),
-      player3: players.find(p => p.id === m.player3_id),
-      player4: players.find(p => p.id === m.player4_id),
-    }))
+  const { data: matches, error: matchError } = await supabase
+    .from('matches')
+    .select('*')
+    .eq('tournament_id', tournamentId)
+    .order('round')
+    .order('position')
+  if (matchError) throw matchError
+
+  const playerIds = [...new Set(matches.flatMap(m =>
+    [m.player1_id, m.player2_id, m.player3_id, m.player4_id].filter(Boolean)
+  ))]
+
+  if (playerIds.length === 0) return matches
+
+  const { data: players, error: pError } = await supabase
+    .from('players')
+    .select('*')
+    .in('id', playerIds)
+  if (pError) throw pError
+
+  return matches.map(m => ({
+    ...m,
+    player1: players.find(p => p.id === m.player1_id),
+    player2: players.find(p => p.id === m.player2_id),
+    player3: players.find(p => p.id === m.player3_id),
+    player4: players.find(p => p.id === m.player4_id),
+  }))
 }
 
 export async function insertMatches(matches: Omit<Match, 'id' | 'player1' | 'player2' | 'player3' | 'player4'>[]): Promise<void> {
-  const all = load<Match>('bt_matches')
-  const newMatches = matches.map(m => ({ ...m, id: uid() }))
-  save('bt_matches', [...all, ...newMatches])
+  const { error } = await supabase.from('matches').insert(matches)
+  if (error) throw error
 }
 
 export async function updateMatch(id: string, patch: Partial<Match>): Promise<void> {
-  save('bt_matches', load<Match>('bt_matches').map(m => m.id === id ? { ...m, ...patch } : m))
+  const { error } = await supabase.from('matches').update(patch).eq('id', id)
+  if (error) throw error
 }
 
 export async function resetMatch(matchId: string): Promise<void> {
-  save('bt_matches', load<Match>('bt_matches').map(m =>
-    m.id === matchId
-      ? { ...m, score1: null, score2: null, winner_id: null, status: 'pending' }
-      : m
-  ))
+  const { error } = await supabase
+    .from('matches')
+    .update({ score1: null, score2: null, winner_id: null, status: 'pending' })
+    .eq('id', matchId)
+  if (error) throw error
 }
 
 export async function undoSingleElimAdvance(match: Match): Promise<void> {
@@ -145,13 +183,15 @@ export async function undoSingleElimAdvance(match: Match): Promise<void> {
   const nextRound = match.round + 1
   const nextPos = Math.floor(match.position / 2)
   const slot = match.position % 2 === 0 ? 'player1_id' : 'player2_id'
-  const all = load<Match>('bt_matches')
-  const nextMatch = all.find(m =>
-    m.tournament_id === match.tournament_id &&
-    m.round === nextRound &&
-    m.position === nextPos
-  )
-  if (!nextMatch) return
+
+  const { data: nextMatch, error } = await supabase
+    .from('matches')
+    .select('id')
+    .eq('tournament_id', match.tournament_id)
+    .eq('round', nextRound)
+    .eq('position', nextPos)
+    .single()
+  if (error || !nextMatch) return
   await updateMatch(nextMatch.id, { [slot]: null })
 }
 
