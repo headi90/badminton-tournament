@@ -13,11 +13,13 @@ interface Props {
 
 export default function MatchModal({ match, allMatches, format, onClose, onSaved }: Props) {
   const { t } = useLang()
-  const [score1, setScore1] = useState(match.score1 ?? 0)
-  const [score2, setScore2] = useState(match.score2 ?? 0)
+  const [score1, setScore1] = useState(match.score1 != null ? String(match.score1) : '')
+  const [score2, setScore2] = useState(match.score2 != null ? String(match.score2) : '')
 
   const isAmericano = format === 'americano'
-  const tied = score1 === score2
+  const s1 = score1 === '' ? NaN : Number(score1)
+  const s2 = score2 === '' ? NaN : Number(score2)
+  const tied = s1 === s2
 
   const leftLabel = isAmericano
     ? `${match.player1?.name ?? 'TBD'} & ${match.player2?.name ?? 'TBD'}`
@@ -28,22 +30,22 @@ export default function MatchModal({ match, allMatches, format, onClose, onSaved
     : (match.player2?.name ?? 'TBD')
 
   async function handleSave() {
-    if (score1 < 0 || score2 < 0) return
+    if (isNaN(s1) || isNaN(s2) || s1 < 0 || s2 < 0) return
     if (isAmericano) {
-      await db.updateMatch(match.id, { score1, score2, status: 'completed' })
+      await db.updateMatch(match.id, { score1: s1, score2: s2, status: 'completed' })
       onSaved()
       return
     }
     if (!match.player1_id || !match.player2_id || tied) return
-    const winnerId = score1 > score2 ? match.player1_id : match.player2_id
-    await db.updateMatch(match.id, { score1, score2, winner_id: winnerId, status: 'completed' })
+    const winnerId = s1 > s2 ? match.player1_id : match.player2_id
+    await db.updateMatch(match.id, { score1: s1, score2: s2, winner_id: winnerId, status: 'completed' })
     if (format === 'single_elimination') {
-      await db.advanceSingleElimWinner({ ...match, score1, score2, winner_id: winnerId, status: 'completed' }, allMatches)
+      await db.advanceSingleElimWinner({ ...match, score1: s1, score2: s2, winner_id: winnerId, status: 'completed' }, allMatches)
     }
     onSaved()
   }
 
-  const scoresValid = score1 >= 0 && score2 >= 0
+  const scoresValid = !isNaN(s1) && !isNaN(s2) && s1 >= 0 && s2 >= 0
   const canSave = scoresValid && (isAmericano
     ? (match.player1_id && match.player2_id && match.player3_id && match.player4_id)
     : (!tied && match.player1_id && match.player2_id))
@@ -56,10 +58,13 @@ export default function MatchModal({ match, allMatches, format, onClose, onSaved
           <div className="flex-1 text-center">
             <p className="font-medium text-gray-700 mb-2 text-sm leading-tight">{leftLabel}</p>
             <input
-              type="number"
-              min={0}
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              placeholder="0"
               value={score1}
-              onChange={e => setScore1(Number(e.target.value))}
+              onFocus={e => e.target.select()}
+              onChange={e => { const v = e.target.value.replace(/[^0-9]/g, ''); setScore1(v) }}
               className="w-16 text-center border rounded-lg p-2 text-xl font-bold"
             />
           </div>
@@ -67,10 +72,13 @@ export default function MatchModal({ match, allMatches, format, onClose, onSaved
           <div className="flex-1 text-center">
             <p className="font-medium text-gray-700 mb-2 text-sm leading-tight">{rightLabel}</p>
             <input
-              type="number"
-              min={0}
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              placeholder="0"
               value={score2}
-              onChange={e => setScore2(Number(e.target.value))}
+              onFocus={e => e.target.select()}
+              onChange={e => { const v = e.target.value.replace(/[^0-9]/g, ''); setScore2(v) }}
               className="w-16 text-center border rounded-lg p-2 text-xl font-bold"
             />
           </div>
